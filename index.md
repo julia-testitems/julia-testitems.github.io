@@ -197,7 +197,7 @@ end
 - [**TestItems.jl**](https://github.com/julia-testitems/TestItems.jl) — The core `@testitem`, `@testmodule`, and `@testsnippet` macros.
 - [**Julia VS Code Extension**](https://www.julia-vscode.org/) — Rich editor integration with inline results, debugging, and coverage.
 - [**TestItemRunner.jl**](https://github.com/julia-vscode/TestItemRunner.jl) — Run test items from the command line via `Pkg.test`.
-- [**TestItemREPL.jl**](https://github.com/julia-vscode/TestItemREPL.jl) — Interactive REPL runner with live progress and result inspection. *(Prerelease)*
+- [**TestItemREPL.jl**](https://github.com/julia-testitems/TestItemREPL.jl) — Interactive REPL runner with live progress and result inspection. *(Prerelease)*
 - [**testitem-workflow**](https://github.com/julia-testitems/testitem-workflow) — Reusable GitHub Workflow for CI with version matrix support.
 
 </div>

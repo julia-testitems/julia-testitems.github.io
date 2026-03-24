@@ -48,7 +48,7 @@ See [VS Code Integration](./vscode) for details.
 
 ### In the REPL
 
-[TestItemREPL.jl](https://github.com/julia-vscode/TestItemREPL.jl) lets you run test items interactively from the Julia REPL. It provides an interactive interface with live progress, filtering by name or tag, and result inspection — all without leaving the terminal.
+[TestItemREPL.jl](https://github.com/julia-testitem/TestItemREPL.jl) lets you run test items interactively from the Julia REPL. It provides an interactive interface with live progress, filtering by name or tag, and result inspection — all without leaving the terminal.
 
 ::: warning Prerelease
 TestItemREPL.jl is currently a prerelease package. The API and behavior may change before the first stable release.
