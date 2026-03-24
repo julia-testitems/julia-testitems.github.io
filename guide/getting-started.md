@@ -46,6 +46,16 @@ If you have the [Julia VS Code extension](https://www.julia-vscode.org/) install
 
 See [VS Code Integration](./vscode) for details.
 
+### In the REPL
+
+[TestItemREPL.jl](https://github.com/julia-vscode/TestItemREPL.jl) lets you run test items interactively from the Julia REPL. It provides an interactive interface with live progress, filtering by name or tag, and result inspection — all without leaving the terminal.
+
+::: warning Prerelease
+TestItemREPL.jl is currently a prerelease package. The API and behavior may change before the first stable release.
+:::
+
+See [REPL Runner](./repl) for the full setup and usage.
+
 ### In CI
 
 The [testitem-workflow](https://github.com/julia-testitems/testitem-workflow) provides a reusable GitHub Workflow that handles testing across multiple Julia versions and platforms, documentation deployment, and more — all from a single workflow file. See [CI Integration](./ci) for the full setup.

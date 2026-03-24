@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Julia Test Items
   text: A modern testing framework for Julia
-  tagline: Write standalone test items, run them anywhere — VS Code, command line, or CI.
+  tagline: Write standalone test items, run them anywhere — VS Code, REPL, command line, or CI.
   image:
     src: /images/vscode-main.png
     alt: VS Code with test items, inline results, and code coverage
@@ -20,7 +20,7 @@ features:
   - title: Standalone Test Items
     details: Structure tests into independent <code>@testitem</code> blocks that can be run individually. No more running your entire test suite to check one thing.
   - title: Run Anywhere
-    details: The same tests work in VS Code, on the command line, and in GitHub Actions CI — no changes needed.
+    details: The same tests work in VS Code, the REPL, on the command line, and in GitHub Actions CI — no changes needed.
   - title: Parallel Execution
     details: Test items run in parallel across multiple worker processes, with automatic process management and configurable concurrency.
   - title: Code Coverage & Debugging
@@ -148,6 +148,18 @@ features:
 
 <div class="showcase-section reverse">
   <div class="showcase-text">
+    <h2>Interactive REPL Runner</h2>
+    <p>
+      Run test items directly from the Julia REPL with an interactive interface. Filter by name or tag, see live progress, and inspect results — all without leaving the terminal. <em>(Prerelease)</em>
+    </p>
+  </div>
+  <div class="showcase-image">
+    <img src="/images/repl-main.png" alt="Julia REPL running test items interactively with live progress and results">
+  </div>
+</div>
+
+<div class="showcase-section">
+  <div class="showcase-text">
     <h2>Batteries-Included CI</h2>
     <p>
       A single reusable workflow gives you linting, testing across a full Julia version and platform matrix, documentation deployment, CompatHelper, and TagBot — all configured in one YAML file.
@@ -185,6 +197,7 @@ end
 - [**TestItems.jl**](https://github.com/julia-testitems/TestItems.jl) — The core `@testitem`, `@testmodule`, and `@testsnippet` macros.
 - [**Julia VS Code Extension**](https://www.julia-vscode.org/) — Rich editor integration with inline results, debugging, and coverage.
 - [**TestItemRunner.jl**](https://github.com/julia-vscode/TestItemRunner.jl) — Run test items from the command line via `Pkg.test`.
+- [**TestItemREPL.jl**](https://github.com/julia-vscode/TestItemREPL.jl) — Interactive REPL runner with live progress and result inspection. *(Prerelease)*
 - [**testitem-workflow**](https://github.com/julia-testitems/testitem-workflow) — Reusable GitHub Workflow for CI with version matrix support.
 
 </div>
