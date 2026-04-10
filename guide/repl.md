@@ -4,7 +4,7 @@
 TestItemREPL.jl is currently a prerelease package. The API and behavior may change before the first stable release.
 :::
 
-[TestItemREPL.jl](https://github.com/julia-testitem/TestItemREPL.jl) provides an interactive REPL mode for running test items directly from the Julia terminal. It gives you live progress, filtering, background runs, and result inspection — all without leaving the REPL.
+[TestItemREPL.jl](https://github.com/julia-testitems/TestItemREPL.jl) provides an interactive REPL mode for running test items directly from the Julia terminal. It gives you live progress, filtering, background runs, and result inspection — all without leaving the REPL.
 
 ![REPL runner](/images/repl-main.png)
 
@@ -14,7 +14,7 @@ Install TestItemREPL.jl into your global environment:
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/julia-testitem/TestItemREPL.jl")
+Pkg.add(url="https://github.com/julia-testitems/TestItemREPL.jl")
 ```
 
 Then load it in the REPL:
