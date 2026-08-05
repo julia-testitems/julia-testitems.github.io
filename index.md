@@ -162,7 +162,7 @@ features:
   <div class="showcase-text">
     <h2>Batteries-Included CI</h2>
     <p>
-      A single reusable workflow gives you linting, testing across a full Julia version and platform matrix, documentation deployment, CompatHelper, and TagBot — all configured in one YAML file.
+      A single reusable workflow gives you linting, testing across a full Julia version and platform matrix, documentation deployment, and TagBot — all configured in one YAML file.
     </p>
   </div>
   <div class="showcase-image">

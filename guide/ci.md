@@ -4,7 +4,7 @@ The test item framework provides GitHub Actions integration for running tests in
 
 ## Reusable Workflow (Recommended)
 
-The [testitem-workflow](https://github.com/julia-testitems/testitem-workflow) repository provides a reusable GitHub Workflow that handles linting, testing across multiple Julia versions and platforms, documentation deployment, compatibility updates, and tagging — all in one configuration.
+The [testitem-workflow](https://github.com/julia-testitems/testitem-workflow) repository provides a reusable GitHub Workflow that handles linting, testing across multiple Julia versions and platforms, documentation deployment, and tagging — all in one configuration.
 
 ### Quick Start
 
@@ -17,17 +17,16 @@ on:
   push: {branches: [main, master]}
   pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]}
   issue_comment: {types: [created]}
-  schedule: [{cron: '0 0 * * *'}]
   workflow_dispatch:
     inputs:
       feature:
         type: choice
         description: What to run
-        options: [CompatHelper, DocDeploy, LintAndTest, TagBot]
+        options: [DocDeploy, LintAndTest, TagBot]
 
 jobs:
   julia-ci:
-    uses: julia-testitems/testitem-workflow/.github/workflows/juliaci.yml@v1
+    uses: julia-testitems/testitem-workflow/.github/workflows/juliaci.yml@v2
     permissions: write-all
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
@@ -37,7 +36,9 @@ This gives you:
 - Tests on release + LTS Julia versions
 - Tests on all supported platforms (Linux, macOS, Windows; x64 and x86/aarch64)
 - Documentation deployment
-- CompatHelper and TagBot automation
+- TagBot automation
+
+For dependency updates, see [Dependabot's Julia support](https://docs.github.com/en/code-security/dependabot).
 
 ### Julia Version Matrix
 
@@ -90,7 +91,7 @@ Draft PR and PR prefixes are mutually exclusive — a draft PR only uses `draft-
 ```yaml
 jobs:
   julia-ci:
-    uses: julia-testitems/testitem-workflow/.github/workflows/juliaci.yml@v1
+    uses: julia-testitems/testitem-workflow/.github/workflows/juliaci.yml@v2
     with:
       draft-pr-include-lts-versions: false
       draft-pr-include-windows-x64: false
@@ -108,7 +109,7 @@ jobs:
 ```yaml
 jobs:
   julia-ci:
-    uses: julia-testitems/testitem-workflow/.github/workflows/juliaci.yml@v1
+    uses: julia-testitems/testitem-workflow/.github/workflows/juliaci.yml@v2
     with:
       include-rc-versions: true
     permissions: write-all
