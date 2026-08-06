@@ -38,6 +38,7 @@ Both keys are optional:
 | --- | --- | --- |
 | `include` | everything | Only files matching one of these patterns are searched. |
 | `exclude` | nothing | Files matching any of these are never searched, even if `include` matches them. |
+| `config-version` | `1` | The config format version. You can leave it out. |
 
 `exclude` always wins over `include`.
 
@@ -94,6 +95,17 @@ whose `include = ["test_*.jl"]` does not match it, not by the root file's
 If that seems strict, it buys you something worth having: to know how a folder is
 configured, you read exactly one file. Most projects need only a single
 `JuliaTestItems.toml` at the root.
+
+Since a nested file replacing its parent would otherwise be invisible, the inner
+file is flagged with a warning naming the one it takes over from. That is
+normally what you want — a stray config usually arrives with a vendored
+repository or a copied example, where the shadowing is accidental. If the subtree
+is meant to be independent, silence it in that subtree's `JuliaLint.toml`:
+
+```toml
+[rules]
+shadowed_config = "off"
+```
 
 ## Reporting problems in test items
 
