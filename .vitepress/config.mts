@@ -21,6 +21,7 @@ export default defineConfig({
         items: [
           { text: 'Getting Started', link: '/guide/getting-started' },
           { text: 'Writing Tests', link: '/guide/writing-tests' },
+          { text: 'Configuration', link: '/guide/configuration' },
           { text: 'VS Code', link: '/guide/vscode' },
           { text: 'REPL', link: '/guide/repl' },
           { text: 'Command Line', link: '/guide/cli' },

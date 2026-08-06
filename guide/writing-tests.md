@@ -76,6 +76,9 @@ end
 
 Inline test items are automatically discovered — no additional configuration needed.
 
+If you need to keep some files *out* of discovery — vendored sources, generated
+code, scratch files — see [Configuration](./configuration).
+
 ## Tags
 
 Tags let you categorize and filter test items:
