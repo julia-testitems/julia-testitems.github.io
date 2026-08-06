@@ -93,11 +93,14 @@ whose `include = ["test_*.jl"]` does not match it, not by the root file's
 `exclude`, which no longer applies inside `test/`.
 
 If that seems strict, it buys you something worth having: to know how a folder is
-configured, you read exactly one file. Most projects need only a single
-`JuliaTestItems.toml` at the root.
+configured, you read exactly one file. A single `JuliaTestItems.toml` at the root
+should be your default — when part of the tree needs different settings, use an
+`[[override]]` block in that one file rather than a second file. A nested file is
+a last resort, for a subtree that is genuinely independent of the project, such
+as a vendored repository.
 
 Since a nested file replacing its parent would otherwise be invisible, the inner
-file is flagged with a warning naming the one it takes over from. That is
+file is flagged with an informational diagnostic naming the one it takes over from. That is
 normally what you want — a stray config usually arrives with a vendored
 repository or a copied example, where the shadowing is accidental. If the subtree
 is meant to be independent, silence it in that subtree's `JuliaLint.toml`:
