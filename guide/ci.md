@@ -1,6 +1,9 @@
 # CI Integration
 
-The test item framework provides GitHub Actions integration for running tests in CI.
+The test item framework provides GitHub Actions integration for running tests in CI. There are two ways in:
+
+- **The [reusable workflow](#reusable-workflow-recommended)** — one YAML file gives you lint, format check, a full version and platform test matrix, coverage, a job summary, docs deployment, and TagBot. Start here.
+- **The [individual actions](./actions)** — the pieces the workflow is built from, for when you already have a pipeline or need control the workflow does not offer.
 
 ## Reusable Workflow (Recommended)
 
@@ -33,12 +36,46 @@ jobs:
 ```
 
 This gives you:
-- Tests on release + LTS Julia versions
+- Linting, with findings shown as inline annotations on the diff
+- A format check, which stays inactive until you add a `JuliaFormat.toml` (see [below](#formatting))
+- Tests on release + LTS Julia versions, run with [`juliati`](./cli)
 - Tests on all supported platforms (Linux, macOS, Windows; x64 and x86/aarch64)
+- Coverage upload to Codecov
+- A single job summary aggregating test and lint results across the whole matrix
 - Documentation deployment
 - TagBot automation
 
 For dependency updates, see [Dependabot's Julia support](https://docs.github.com/en/code-security/dependabot).
+
+### Manual Runs
+
+The `workflow_dispatch` block in the quick start above lets you trigger parts of the workflow by hand from the Actions tab. The `feature` choice selects what runs:
+
+| Choice | Runs |
+| --- | --- |
+| `LintAndTest` | Lint, format check, the test matrix, and the results report |
+| `DocDeploy` | Documentation deployment only |
+| `TagBot` | TagBot only |
+
+### Jobs
+
+| Job | What it does |
+| --- | --- |
+| `lint` | Runs [`julia-lint`](./actions#julia-lint) and uploads the SARIF for the report job. |
+| `format` | Runs [`julia-format`](./actions#julia-format) in check mode with `require-config: true`. |
+| `compute-test-matrix` | Derives the version/platform matrix from your `[compat]` bound via [`julia-compute-test-matrix`](./actions#julia-compute-test-matrix). |
+| `run-tests` | One leg per matrix entry: installs Julia, builds the package, runs test items with [`julia-run-testitems`](./actions#julia-run-testitems), processes coverage, and uploads to Codecov. |
+| `report-results` | Merges every leg's results plus the lint SARIF into one job summary via [`julia-report-ci-results`](./actions#julia-report-ci-results). |
+| `deploy-docs` | Runs `julia-docdeploy` if the repository has a docs build. |
+| `tagbot` | Runs TagBot on the release comment, or on a manual trigger. |
+
+Because the report job aggregates across the matrix, a test that fails on one platform only is reported once, with the platforms it failed on — you do not have to open 69 job logs to find it.
+
+### Formatting
+
+The `format` job is opt-in. It runs with `require-config: true`, so it is a no-op until your repository contains a `JuliaFormat.toml` (or `juliaformat.toml`). Adding an empty one is enough to turn the check on with default settings.
+
+A `.JuliaFormatter.toml` is **not** honored — configuration comes from `JuliaFormat.toml` only.
 
 ### Julia Version Matrix
 

@@ -1,8 +1,9 @@
 # Configuration
 
 Test item discovery can be configured with a `JuliaTestItems.toml` file in your
-project. Every surface that finds test items reads it — VS Code, the REPL runner,
-the command line tool, and CI — so a single file keeps them all in agreement.
+project. Every surface that finds test items reads it — [VS Code](./vscode),
+[DevREPL](./repl), the [`juliati`](./cli) command line tool, [CI](./ci), and
+[JuliaMCP](./mcp) — so a single file keeps them all in agreement.
 
 The file is entirely optional. Without one, every `.jl` file in your project is
 searched for `@testitem` blocks, which is the right behavior for almost all
@@ -130,8 +131,9 @@ reported**.
 
 `JuliaTestItems.toml` currently controls discovery scope only. Execution
 settings — worker counts, timeouts, environment variables, default tag filters,
-per-item defaults — are still set per surface: in VS Code settings, as arguments
-to the REPL and CLI runners, or in your CI configuration.
+per-item defaults — are still set per surface: in VS Code settings, as flags to
+[DevREPL](./repl#run-flags) and [`juliati`](./cli#options), or as inputs in your
+[CI configuration](./ci).
 
 Those settings are planned as additional sections in this same file. The keys
 documented above will keep working when they arrive.

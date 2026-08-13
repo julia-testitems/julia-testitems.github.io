@@ -25,6 +25,8 @@ features:
     details: Test items run in parallel across multiple worker processes, with automatic process management and configurable concurrency.
   - title: Code Coverage & Debugging
     details: Run tests with code coverage on Julia 1.11+, or step through them in the VS Code debugger with full breakpoint support.
+  - title: Built for AI Agents
+    details: An <a href="/guide/mcp">MCP server</a> exposes the same discovery, execution, and diagnostics to coding agents, so they run individual test items and read structured failures instead of scraping output.
 ---
 
 <style>
@@ -79,6 +81,23 @@ features:
 }
 
 .dark .showcase-image img {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Same slot as .showcase-image, but holding a terminal transcript instead. */
+.showcase-code {
+  flex: 1.5;
+  min-width: 0;
+}
+
+.showcase-code div[class*='language-'] {
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.dark .showcase-code div[class*='language-'] {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -148,25 +167,82 @@ features:
 
 <div class="showcase-section reverse">
   <div class="showcase-text">
-    <h2>Interactive REPL Runner</h2>
+    <h2>A Real Command Line Runner</h2>
     <p>
-      Run test items directly from the Julia REPL with an interactive interface. Filter by name or tag, see live progress, and inspect results — all without leaving the terminal. <em>(Prerelease)</em>
+      The <code>juliati</code> command finds every test item under a folder and runs them in parallel test processes — no editor, no <code>runtests.jl</code>, no Julia startup incantation. Filter by name or tag, measure coverage, and write machine-readable results for CI. <em>(Prerelease)</em>
     </p>
   </div>
-  <div class="showcase-image">
-    <img src="/images/repl-main.png" alt="Julia REPL running test items interactively with live progress and results">
+  <div class="showcase-code">
+
+```ansi
+$ juliati
+  Discovered 24 test item run(s) in 3 file(s)
+  Launching test processes....
+  Progress: 24/24 (23 passed, 1 failed)
+
+24 tests ran, 23 passed, 1 failed.
+```
+
   </div>
 </div>
 
 <div class="showcase-section">
   <div class="showcase-text">
+    <h2>Interactive REPL Mode</h2>
+    <p>
+      <a href="/guide/repl">DevREPL.jl</a> adds a <code>test&gt;</code> mode to the Julia REPL. Pick test items from a fuzzy list, rerun just the failures, browse them interactively, and lint or format your code — all without leaving the terminal. <em>(Prerelease)</em>
+    </p>
+  </div>
+  <div class="showcase-code">
+
+```ansi
+julia> )
+
+test> results
+Run #2: 184 test(s) (60.6 s) — 183 passed, 1 failed
+
+  [FAIL] get_name (1388.9ms)
+    Test Failed at test/test_interface.jl:68
+      Expression: valof(get_name(parse("struct T end"))) == "F"
+       Evaluated: "T" == "F"
+
+test> test failed
+```
+
+  </div>
+</div>
+
+<div class="showcase-section reverse">
+  <div class="showcase-text">
     <h2>Batteries-Included CI</h2>
     <p>
-      A single reusable workflow gives you linting, testing across a full Julia version and platform matrix, documentation deployment, and TagBot — all configured in one YAML file.
+      A single reusable workflow gives you linting, format checking, testing across a full Julia version and platform matrix, coverage upload, a rich job summary, documentation deployment, and TagBot — all configured in one YAML file. Prefer to build your own pipeline? Each step is also a <a href="/guide/actions">standalone action</a>.
     </p>
   </div>
   <div class="showcase-image">
     <img src="/images/github-action.png" alt="GitHub Actions workflow showing lint, test matrix, report results, and automation stages">
+  </div>
+</div>
+
+<div class="showcase-section">
+  <div class="showcase-text">
+    <h2>Test Items for AI Agents</h2>
+    <p>
+      <a href="/guide/mcp">JuliaMCP.jl</a> is an MCP server that hands coding agents a live Julia environment. An agent can run a subset of test items, read the structured failures, lint a file, and evaluate code in a persistent session — instead of shelling out to <code>julia</code> and scraping stdout. <em>(Prerelease)</em>
+    </p>
+  </div>
+  <div class="showcase-code">
+
+```json
+{
+  "mcpServers": {
+    "julia": {
+      "command": "juliamcp"
+    }
+  }
+}
+```
+
   </div>
 </div>
 
@@ -194,11 +270,16 @@ end
 
 ## The Test Item Ecosystem
 
-- [**TestItems.jl**](https://github.com/julia-testitems/TestItems.jl) — The core `@testitem`, `@testmodule`, and `@testsnippet` macros.
+- [**TestItems.jl**](https://github.com/julia-vscode/TestItems.jl) — The core `@testitem`, `@testmodule`, and `@testsnippet` macros.
 - [**Julia VS Code Extension**](https://www.julia-vscode.org/) — Rich editor integration with inline results, debugging, and coverage.
-- [**TestItemRunner.jl**](https://github.com/julia-vscode/TestItemRunner.jl) — Run test items from the command line via `Pkg.test`.
-- [**TestItemREPL.jl**](https://github.com/julia-testitems/TestItemREPL.jl) — Interactive REPL runner with live progress and result inspection. *(Prerelease)*
-- [**testitem-workflow**](https://github.com/julia-testitems/testitem-workflow) — Reusable GitHub Workflow for CI with version matrix support.
+- [**TestItemApp.jl**](https://github.com/julia-vscode/TestItemApp.jl) — The `juliati` command line runner. *(Prerelease)* — [guide](/guide/cli)
+- [**DevREPL.jl**](https://github.com/julia-vscode/DevREPL.jl) — The `test>` REPL mode, with a test item picker, failure browser, lint, and format. *(Prerelease)* — [guide](/guide/repl)
+- [**JuliaMCP.jl**](https://github.com/julia-vscode/JuliaMCP.jl) — MCP server giving AI coding agents a live Julia environment. *(Prerelease)* — [guide](/guide/mcp)
+- [**testitem-workflow**](https://github.com/julia-testitems/testitem-workflow) — Reusable GitHub Workflow for CI with version matrix support — [guide](/guide/ci)
+- [**GitHub Actions**](/guide/actions) — The individual actions the workflow is built from, usable on their own.
+- [**TestItemRunner.jl**](https://github.com/julia-vscode/TestItemRunner.jl) — Runs test items under `Pkg.test`, for compatibility with the traditional workflow. — [guide](/guide/pkg-test)
+
+Under the hood, discovery is powered by [JuliaWorkspaces.jl](https://github.com/julia-vscode/JuliaWorkspaces.jl) and [TestItemDetection.jl](https://github.com/julia-testitems/TestItemDetection.jl), and execution by [TestItemControllers.jl](https://github.com/julia-vscode/TestItemControllers.jl) — the same engines every surface above shares.
 
 </div>
 

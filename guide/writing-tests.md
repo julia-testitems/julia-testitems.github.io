@@ -51,7 +51,9 @@ include("test_foo.jl")
 include("test_bar.jl")
 ```
 
-The test item framework discovers `@testitem`s by scanning `.jl` files — it does **not** rely on `include` for discovery. However, including your test files in `runtests.jl` is still recommended because Julia will parse them and catch syntax errors, typos, and other issues that would otherwise go undetected until the test item actually runs. The `include`d files are evaluated but the `@testitem` macro is a no-op at include time, so there is no performance cost.
+The test item framework discovers `@testitem`s by scanning `.jl` files — it does **not** rely on `include` for discovery, and none of the runners need a `runtests.jl` at all.
+
+A `runtests.jl` is still worth having for two reasons: it keeps your package working with `Pkg.test()` (see [Legacy Pkg.test Integration](./pkg-test)), and `include`ing your test files means Julia parses them, catching syntax errors and typos that would otherwise go undetected until that particular test item ran. The `include`d files are evaluated but the `@testitem` macro is a no-op at include time, so there is no performance cost.
 
 ### Inline in Source Code
 
@@ -93,7 +95,7 @@ end
 end
 ```
 
-Tags are `Symbol`s and can be used to filter which tests to run in VS Code, on the command line, and in CI. See the [VS Code](./vscode), [CLI](./cli), and [CI](./ci) guides for filtering details.
+Tags are `Symbol`s and can be used to filter which tests to run on every surface. See the [VS Code](./vscode#filtering-by-tags), [REPL](./repl#run-flags), [command line](./cli#filtering), [CI](./ci), and [Pkg.test](./pkg-test#filtering) guides for filtering details.
 
 ## Sharing Code Across Test Items
 
