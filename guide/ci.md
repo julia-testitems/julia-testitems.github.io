@@ -61,8 +61,8 @@ The `workflow_dispatch` block in the quick start above lets you trigger parts of
 
 | Job | What it does |
 | --- | --- |
-| `lint` | Runs [`julia-lint`](./actions#julia-lint) and uploads the SARIF for the report job. |
-| `format` | Runs [`julia-format`](./actions#julia-format) in check mode with `require-config: true`. |
+| `lint` | Runs the `julia-lint` action and uploads the SARIF for the report job. |
+| `format` | Runs the `julia-format` action in check mode with `require-config: true`. |
 | `compute-test-matrix` | Derives the version/platform matrix from your `[compat]` bound via [`julia-compute-test-matrix`](./actions#julia-compute-test-matrix). |
 | `run-tests` | One leg per matrix entry: installs Julia, builds the package, runs test items with [`julia-run-testitems`](./actions#julia-run-testitems), processes coverage, and uploads to Codecov. |
 | `report-results` | Merges every leg's results plus the lint SARIF into one job summary via [`julia-report-ci-results`](./actions#julia-report-ci-results). |

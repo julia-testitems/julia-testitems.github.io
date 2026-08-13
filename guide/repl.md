@@ -4,12 +4,12 @@
 [DevREPL.jl](https://github.com/julia-vscode/DevREPL.jl) is currently a prerelease package and is not yet registered. The commands and their behavior may change before the first stable release.
 :::
 
-DevREPL.jl adds a `test>` mode to the Julia REPL for running test items from the terminal. It gives you a fuzzy test item picker, live progress, background runs, a failure browser that jumps to your editor, and — because it is already loaded — linting and formatting.
+DevREPL.jl adds a `dev>` mode to the Julia REPL for running test items from the terminal. It gives you a fuzzy test item picker, live progress, background runs, and a failure browser that jumps to your editor.
 
 ```
 julia> )
 
-test> test failed
+dev> test failed
   Discovered 2 test item(s) in 1 file(s)
 2 tests ran, 2 passed.
 ```
@@ -29,49 +29,48 @@ Then load it:
 using DevREPL
 ```
 
-To have the `test>` mode always available, add that line to `~/.julia/config/startup.jl`. DevREPL hooks into REPL initialization, so it works whether it is loaded before or after the REPL comes up.
+To have the `dev>` mode always available, add that line to `~/.julia/config/startup.jl`. DevREPL hooks into REPL initialization, so it works whether it is loaded before or after the REPL comes up.
 
-## Activating the test mode
+## Activating the mode
 
-Press `)` at the `julia>` prompt to enter the test REPL mode. The prompt changes to `test>`:
+Press `)` at the `julia>` prompt to enter the DevREPL mode. The prompt changes to `dev>`:
 
 ```
 julia> )
-test>
+dev>
 ```
 
 The mode is sticky — it stays active between commands. Press **Backspace** on an empty line to return to the normal `julia>` prompt.
 
 Tab completion works throughout: commands and subcommands, flag names, directories, and Juliaup channels.
 
+Test item commands all live under `test`, which can be shortened to `t`.
+
 ## Running tests
 
-### `test`
+### `test run`
 
 Run test items, blocking the REPL until complete. Press **Esc** to cancel.
 
 ```
-test> test [+channel] [path|name] [flags]
+dev> test run [+channel] [path|name] [flags]
 ```
 
 A positional argument that is a directory is used as the path to scan (default: the current working directory); anything else is treated as a case-insensitive substring filter on the test item name.
 
 ```
-test> test                          # opens the picker (see below)
-test> test /path/to/myproject       # run everything in a project
-test> test parsing                  # run items whose name contains "parsing"
-test> test +lts --workers=4
-test> test --tags=unit,fast
+dev> test run /path/to/myproject     # run everything in a project
+dev> test run parsing                # run items whose name contains "parsing"
+dev> test run +lts --workers=4
+dev> test run --tags=unit,fast
 ```
-
-`t` is a shorthand for `test`.
 
 ### `test pick`
 
 Fuzzy-pick the test items to run from an interactive list. Space toggles an item, Enter runs the selection.
 
 ```
-test> test pick [query] [path] [flags]
+dev> test pick [query] [path] [flags]
 ```
 
 A bare `test` with no arguments opens the picker too. This needs an interactive terminal; in a non-TTY session it reports an error instead.
@@ -84,17 +83,15 @@ Repeat the last test run with the same arguments.
 
 Rerun only the items that failed or errored in the last run. This is the fast inner loop: run everything once, then `test failed` until it is quiet.
 
-### `test&`
+### `test run&`
 
 Run tests in the background. The REPL stays interactive so you can keep working.
 
 ```
-test> test& [same options as test]
+dev> test run& [same options as test run]
 ```
 
 Use `test status` to monitor progress and `test results` to view them when done. Completion is reported the next time you run a command.
-
-`t&` is a shorthand for `test&`.
 
 ## Run flags
 
@@ -113,8 +110,8 @@ Write `--workers=4`, not `--workers 4`. Only the `--key=value` and bare `--flag`
 `+channel` requires [Juliaup](https://github.com/JuliaLang/juliaup), and the channel has to be installed already:
 
 ```
-test> test +lts
-test> test +nightly --workers=2
+dev> test run +lts
+dev> test run +nightly --workers=2
 ```
 
 ## Inspecting results
@@ -124,7 +121,7 @@ test> test +nightly --workers=2
 Display results from the last completed run, or a specific run by ID.
 
 ```
-test> test results [id] [--name=pattern] [--verbose] [--output]
+dev> test results [id] [--name=pattern] [--verbose] [--output]
 ```
 
 - **`id`** — run ID to display (prefix matching works). Defaults to the last run.
@@ -143,7 +140,7 @@ Browse the failures of the last run interactively. For each failure you can go b
 List the discovered test items with their location and tags, without running anything.
 
 ```
-test> test list [path] [--tags=t1,t2]
+dev> test list [path] [--tags=t1,t2]
 ```
 
 `ls` is a shorthand.
@@ -153,7 +150,7 @@ test> test list [path] [--tags=t1,t2]
 Show the run history as a table of ID, start time, duration, status, test count, and path.
 
 ```
-test> test runs [--active]
+dev> test runs [--active]
 ```
 
 Only the most recent 20 runs are kept.
@@ -167,7 +164,7 @@ Show the state and live progress of the current background run. `st` is a shorth
 Cancel the active background run, or a specific one by ID.
 
 ```
-test> test cancel [id]
+dev> test cancel [id]
 ```
 
 ## Managing test processes
@@ -182,31 +179,10 @@ Test processes stay alive between runs so repeated runs start fast.
 
 `test plog` is what you want when a whole test process died before running anything — a precompilation error, for instance, whose cause never made it into a test result.
 
-## Linting and formatting
-
-Since DevREPL already has the analysis engine loaded, it also exposes it directly.
-
-### `lint`
-
-```
-test> lint [path]
-```
-
-Lints a folder (default: the current working directory), reporting `file:line:col: severity: message [rule-id]` with a count summary. Respects [`JuliaLint.toml`](./configuration#reporting-problems-in-test-items).
-
-### `format`
-
-```
-test> format [path]
-test> format --check [path]
-```
-
-`format` reformats a file or an entire folder **in place**. `format --check` changes nothing and only reports which files would be reformatted — the right choice if you want to look before you leap. Both honor your `JuliaFormat.toml` configuration, including its exclusions.
-
 ## `help`
 
 ```
-test> help
+dev> help
 ```
 
 Shows a summary of every command. `?` is a shorthand.
@@ -217,7 +193,7 @@ The test commands used to sit at the top level and are now grouped under `test`.
 
 | Old | New |
 | --- | --- |
-| `run`, `run&` | `test`, `test&` |
+| `run`, `run&` | `test run`, `test run&` |
 | `list`, `ls` | `test list` |
 | `status`, `st` | `test status` |
 | `cancel` | `test cancel` |

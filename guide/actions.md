@@ -1,9 +1,9 @@
 # GitHub Actions
 
-The [reusable workflow](./ci) is built out of a handful of individual GitHub Actions. Each one is also usable on its own, which is what you want when the workflow's shape does not fit — you already have a CI pipeline, you need extra steps between the test matrix and the report, or you only want one piece such as the linter.
+The [reusable workflow](./ci) is built out of individual GitHub Actions. The three that make up the test pipeline are documented here, because each is also usable on its own — which is what you want when the workflow's shape does not fit: you already have a CI pipeline, you need extra steps between the test matrix and the report, or you only want to run test items and handle the rest yourself.
 
 ::: tip Start with the workflow
-If you are setting up CI for a package from scratch, use the [reusable workflow](./ci) instead. It wires all of these together, along with caching, coverage upload, docs deployment, and TagBot. Reach for the individual actions when you need control the workflow does not give you.
+If you are setting up CI for a package from scratch, use the [reusable workflow](./ci) instead. It wires these together, along with caching, coverage upload, linting, format checking, docs deployment, and TagBot. Reach for the individual actions when you need control the workflow does not give you.
 :::
 
 | Action | Purpose |
@@ -11,13 +11,9 @@ If you are setting up CI for a package from scratch, use the [reusable workflow]
 | [`julia-actions/julia-run-testitems`](#julia-run-testitems) | Run test items via `juliati` |
 | [`julia-actions/julia-compute-test-matrix`](#julia-compute-test-matrix) | Derive a version/platform matrix from `[compat]` |
 | [`julia-actions/julia-report-ci-results`](#julia-report-ci-results) | Render a job summary from results and lint output |
-| [`julia-actions/julia-lint`](#julia-lint) | Lint with `julialint` |
-| [`julia-vscode/julia-format`](#julia-format) | Check or apply formatting with `juliaformat` |
 
-::: warning Two of these are under active development
-`julia-report-ci-results`, `julia-lint`, and `julia-format` document their interfaces as still subject to change. Pin a major version, as shown below, and check the release notes when you bump.
-
-Note also that `julia-format` lives in the **`julia-vscode`** organization and is at **v1**, while the other four are in `julia-actions` at v2.
+::: warning Interfaces may still change
+`julia-report-ci-results` documents its interface as still subject to change. Pin a major version, as shown below, and check the release notes when you bump.
 :::
 
 ## julia-run-testitems
@@ -163,60 +159,3 @@ Have the test jobs upload the file that `julia-run-testitems` wrote (via its `re
 | `process-logs-artifact-id` | ID of the uploaded artifact (empty when nothing was uploaded). |
 
 The summary is truncated safely if it would exceed GitHub's 1 MiB job summary limit; the complete output is always in the artifact.
-
-## julia-lint
-
-Lints the repository with `julialint`, writes SARIF, and turns the findings into inline GitHub annotations. Optionally uploads the SARIF to GitHub code scanning.
-
-```yaml
-- uses: actions/checkout@v7
-- uses: julia-actions/julia-lint@v2
-```
-
-### Inputs
-
-| Input | Default | Description |
-| --- | --- | --- |
-| `path` | `.` | Path to lint, relative to the workspace. |
-| `sarif-path` | `lint-results.sarif` | Where to write the SARIF results file. |
-| `max-warnings` | unlimited | Fail when the warning count exceeds this number. |
-| `quiet` | `false` | Report only errors, suppressing warnings, info, and hints. |
-| `fail-on-errors` | `true` | Fail the step when lint errors are found. When `false`, findings never fail the step — but a tool failure still does. |
-| `code-scanning-upload` | `false` | Also upload the SARIF to GitHub code scanning. Requires the `security-events: write` permission. |
-
-### Outputs
-
-| Output | Description |
-| --- | --- |
-| `sarif-path` | Path of the produced SARIF file. |
-| `error-count` | Number of error-severity lint results. |
-| `warning-count` | Number of warning-severity lint results. |
-
-A `julialint` tool failure always fails the step; only *findings* are governed by `fail-on-errors`. Lint behavior itself is configured with `JuliaLint.toml` in your repository, not through action inputs.
-
-## julia-format
-
-Checks — or applies — formatting with `juliaformat`.
-
-```yaml
-- uses: actions/checkout@v7
-- uses: julia-vscode/julia-format@v1
-  with:
-    require-config: true
-```
-
-### Inputs
-
-| Input | Default | Description |
-| --- | --- | --- |
-| `path` | `.` | Paths to format, relative to the workspace. Multiple paths are separated by spaces; paths containing spaces are not supported. |
-| `mode` | `check` | `check` fails when any file is not formatted and prints the diff; `list` fails likewise but only names the files; `write` reformats in place. |
-| `require-config` | `false` | When true, the action is a no-op unless the repository contains a `JuliaFormat.toml` (or `juliaformat.toml`). |
-
-### Outputs
-
-| Output | Description |
-| --- | --- |
-| `formatted` | `'true'` when all files were formatted — including when the action was skipped because `require-config` found no config file — `'false'` otherwise. |
-
-`require-config: true` is how the reusable workflow makes format checking opt-in: without a `JuliaFormat.toml` in your repository, nothing happens. Formatting is configured by that file only; a `.JuliaFormatter.toml` is **not** honored.

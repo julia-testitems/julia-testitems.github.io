@@ -62,7 +62,7 @@ See [Command Line](./cli) for installation, filtering, coverage, and JSON output
 
 ### In the REPL
 
-[DevREPL.jl](https://github.com/julia-vscode/DevREPL.jl) adds a `test>` mode to the Julia REPL. Press `)` to enter it, then pick test items from a fuzzy list, rerun just the failures, and inspect results — all without leaving the terminal.
+[DevREPL.jl](https://github.com/julia-vscode/DevREPL.jl) adds a `dev>` mode to the Julia REPL. Press `)` to enter it, then pick test items from a fuzzy list, rerun just the failures, and inspect results — all without leaving the terminal.
 
 ::: warning Prerelease
 DevREPL.jl is currently a prerelease package and is not yet registered. The commands and their behavior may change before the first stable release.

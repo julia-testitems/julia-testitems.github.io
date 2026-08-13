@@ -169,7 +169,7 @@ features:
   <div class="showcase-text">
     <h2>A Real Command Line Runner</h2>
     <p>
-      The <code>juliati</code> command finds every test item under a folder and runs them in parallel test processes — no editor, no <code>runtests.jl</code>, no Julia startup incantation. Filter by name or tag, measure coverage, and write machine-readable results for CI. <em>(Prerelease)</em>
+      The <code>juliati</code> command finds every test item under a folder and runs them in parallel test processes — no editor and no <code>runtests.jl</code> required. Filter by name or tag, measure coverage, and write machine-readable results for CI. <em>(Prerelease)</em>
     </p>
   </div>
   <div class="showcase-code">
@@ -190,7 +190,7 @@ $ juliati
   <div class="showcase-text">
     <h2>Interactive REPL Mode</h2>
     <p>
-      <a href="/guide/repl">DevREPL.jl</a> adds a <code>test&gt;</code> mode to the Julia REPL. Pick test items from a fuzzy list, rerun just the failures, browse them interactively, and lint or format your code — all without leaving the terminal. <em>(Prerelease)</em>
+      <a href="/guide/repl">DevREPL.jl</a> adds a <code>dev&gt;</code> mode to the Julia REPL. Pick test items from a fuzzy list, rerun just the failures, and browse them interactively — all without leaving the terminal. <em>(Prerelease)</em>
     </p>
   </div>
   <div class="showcase-code">
@@ -198,7 +198,7 @@ $ juliati
 ```ansi
 julia> )
 
-test> results
+dev> test results
 Run #2: 184 test(s) (60.6 s) — 183 passed, 1 failed
 
   [FAIL] get_name (1388.9ms)
@@ -206,7 +206,7 @@ Run #2: 184 test(s) (60.6 s) — 183 passed, 1 failed
       Expression: valof(get_name(parse("struct T end"))) == "F"
        Evaluated: "T" == "F"
 
-test> test failed
+dev> test failed
 ```
 
   </div>
@@ -273,7 +273,7 @@ end
 - [**TestItems.jl**](https://github.com/julia-vscode/TestItems.jl) — The core `@testitem`, `@testmodule`, and `@testsnippet` macros.
 - [**Julia VS Code Extension**](https://www.julia-vscode.org/) — Rich editor integration with inline results, debugging, and coverage.
 - [**TestItemApp.jl**](https://github.com/julia-vscode/TestItemApp.jl) — The `juliati` command line runner. *(Prerelease)* — [guide](/guide/cli)
-- [**DevREPL.jl**](https://github.com/julia-vscode/DevREPL.jl) — The `test>` REPL mode, with a test item picker, failure browser, lint, and format. *(Prerelease)* — [guide](/guide/repl)
+- [**DevREPL.jl**](https://github.com/julia-vscode/DevREPL.jl) — The `dev>` REPL mode, with a test item picker and failure browser. *(Prerelease)* — [guide](/guide/repl)
 - [**JuliaMCP.jl**](https://github.com/julia-vscode/JuliaMCP.jl) — MCP server giving AI coding agents a live Julia environment. *(Prerelease)* — [guide](/guide/mcp)
 - [**testitem-workflow**](https://github.com/julia-testitems/testitem-workflow) — Reusable GitHub Workflow for CI with version matrix support — [guide](/guide/ci)
 - [**GitHub Actions**](/guide/actions) — The individual actions the workflow is built from, usable on their own.
