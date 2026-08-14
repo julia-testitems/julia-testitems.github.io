@@ -110,6 +110,14 @@ A `.JuliaFormatter.toml` is **not** honored — configuration comes from `JuliaF
 | `env` | `""` | JSON string of environment variables, e.g. `'{"FOO": "BAR"}'` |
 | `github_job_prep_script` | | Path to a Julia script run once per worker before tests |
 
+The workflow deliberately exposes only the settings most packages need. The
+[`julia-run-testitems` action](./actions#julia-run-testitems) it calls has further
+inputs — `junit-path`, `coverage-lcov-path`, `output-mode`, `threads`,
+`gc-between-testitems`, `memory-threshold` and `schedule` — which are not forwarded
+through the workflow. If you need one of them, use the action directly in a pipeline of
+your own; the workflow's [job list](#jobs) is a working description of how the pieces fit
+together.
+
 ### Trigger-Specific Overrides
 
 Any option can be overridden for specific triggers by adding a prefix:
