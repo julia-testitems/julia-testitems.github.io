@@ -45,7 +45,7 @@ More processes means faster test runs but higher memory usage. There is also sta
 
 Test processes launched by the extension persist between runs for fast re-execution. They appear in the **Julia Workspace** panel alongside REPL and Notebook processes.
 
-To free resources, terminate test processes via the **Stop Test Process** button in the Julia Workspace panel.
+To free resources, terminate test processes via the **Stop Test Process** button in the Julia Workspace panel. Keep in mind that a terminated process has to start Julia and load your package again the next time you run a test, whereas a live one only picks up your edits via Revise — see [Test Processes](./test-processes) for how pooling, reuse, memory recycling and hang diagnostics work.
 
 ## Filtering by Tags
 

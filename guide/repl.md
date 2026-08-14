@@ -135,7 +135,7 @@ The run itself is unaffected either way; attaching only turns its progress displ
 | `--name=pattern` | — | Only run items whose name contains this substring (case-insensitive). |
 | `--tags=t1,t2` | — | Only run items carrying at least one of these tags. |
 | `--workers=N` | `min(Sys.CPU_THREADS, 8)` | Maximum number of parallel worker processes. |
-| `--timeout=S` | `300` | Per-test-item timeout in seconds. |
+| `--timeout=S` | `300` | Per-test-item timeout in seconds. Note this is shorter than the `1200` that [`juliati`](./cli#options) and the [CI action](./actions#julia-run-testitems) default to — an interactive run is better off telling you something is stuck. |
 | `--coverage` | off | Enable code coverage measurement. |
 | `--bg` | off | Run in the background instead of blocking the REPL. |
 | `+channel` | current Julia | Juliaup channel to run the tests under, e.g. `+lts`, `+release`, `+nightly`. |
@@ -231,6 +231,8 @@ Test processes stay alive between runs so repeated runs start fast. Process ids 
 | `test log <process-id>` | Show the raw captured output of a test process. |
 
 `test log` is what you want when a whole test process died before running anything — a precompilation error, for instance, whose cause never made it into a test result.
+
+Killing test processes is rarely what you want, because they are what makes the second run of anything fast. See [Test Processes](./test-processes) for how they are pooled, reloaded with Revise, and recycled.
 
 ## `help`
 

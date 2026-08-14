@@ -52,11 +52,19 @@ Options can be written as `--opt value` or `--opt=value`.
 | Option | Default | Description |
 | --- | --- | --- |
 | `--filter <expr>` | run everything | Julia expression over `name`, `tags`, `filename`, `package_name`; only items for which it evaluates to `true` are run. |
-| `--timeout <seconds>` | no timeout | Per-test-item timeout. |
+| `--timeout <seconds\|none>` | `1200` | Per-test-item timeout in seconds. `none` disables it. |
 | `--max-workers <n>` | `min(Sys.CPU_THREADS, 8)` | Maximum number of parallel test processes. |
+| `--threads <n\|auto\|n,m>` | Julia's own default | Value for the test processes' `--threads`. |
 | `--progress <bar\|log\|none>` | `bar` | Progress output style. |
+| `--output <issues\|all\|none>` | `issues` | Which captured test item output is echoed to the console. Output is always captured into the results regardless. See [below](#test-item-output). |
+| `--stream` | off | Print test item output live as it is produced instead of when the item finishes. Requires `--max-workers 1`. |
 | `--coverage` | off | Run test processes in coverage mode. |
+| `--coverage-lcov <path>` | not written | Write the merged coverage of the run to this file in LCOV format. Implies `--coverage`. |
+| `--gc-between-testitems` / `--no-gc-between-testitems` | on with more than one test process | Run a full GC between test items. See [Test Processes](./test-processes#gc-between-test-items). |
+| `--memory-threshold <frac>` | off | Recycle a test process once system memory use exceeds this fraction (0–1). See [Test Processes](./test-processes#memory-threshold-recycling). |
+| `--schedule <duration\|contiguous>` | `duration` | How test items are distributed over test processes. See [Test Processes](./test-processes#scheduling). |
 | `--results-json <path>` | not written | Write the full test run results as JSON to this file. |
+| `--junit-xml <path>` | not written | Write the test run results as JUnit XML to this file. |
 | `--profile-name <name>` | `"Default"` | Profile name recorded in the results. |
 | `--env <KEY=VALUE>` | — | Environment variable for test processes. Repeatable. |
 | `--env-json <json>` | — | JSON object of environment variables for test processes; a `null` value removes the variable. |
@@ -93,8 +101,33 @@ This is the same filter language the [CI actions](./actions#julia-run-testitems)
   ```
   ✓ Default test/test_parsing.jl:parse basics → passed (412ms)
   ✗ Default test/test_parsing.jl:parse edge cases → failed (1203ms)
+  ⊘ Default test/test_parsing.jl:parse on 1.12 → skipped
   ```
 - **`none`** — no progress, no summary, and no failure details. Use this when you only care about the exit code or the JSON results file.
+
+A test item whose [`skip`](./writing-tests#skipping-test-items) keyword evaluated to `true` is marked `⊘` and counted separately, both in the progress line and in the summary:
+
+```
+  Progress: 24/24 (22 passed, 1 failed, 1 skipped)
+
+24 tests ran, 22 passed, 1 failed, 1 skipped.
+```
+
+Counts that are zero are left out, which is why a clean run still reads `24 tests ran, 24 passed.`
+
+## Test item output
+
+Every test item's captured output always reaches `--results-json` and `--junit-xml`. `--output` only controls what is echoed to the console:
+
+- **`issues`** (default) — print it alongside the failure detail of failing items.
+- **`all`** — print it for every item as it finishes.
+- **`none`** — print none of it.
+
+For debugging a single test item, `--stream` prints its output as it happens rather than after it finishes. Because output from several test processes would interleave arbitrarily, it requires `--max-workers 1`:
+
+```sh
+juliati --filter 'name == "the slow one"' --max-workers 1 --stream --progress log
+```
 
 ## Parallel execution
 
@@ -105,15 +138,25 @@ juliati --max-workers 4
 juliati --max-workers 1   # serial execution
 ```
 
+`--threads` sets the `--threads` value of the test processes themselves, in any form `julia` accepts (`4`, `auto`, `2,1`). Left unset, they use Julia's own default.
+
+Test processes are pooled and outlive a single run, which is what makes repeated runs start fast. How they are reused, recycled and scheduled is described in [Test Processes](./test-processes).
+
 ## Code coverage
 
-`--coverage` runs the test processes in coverage mode:
+`--coverage` runs the test processes in coverage mode, attributed per test item:
 
 ```sh
 juliati --coverage --results-json results.json
 ```
 
-Coverage results are part of the JSON output. For a line-by-line view in the editor, use [VS Code](./vscode#code-coverage).
+Coverage results are part of the JSON output. `--coverage-lcov` additionally writes the merged coverage of the whole run in LCOV format, which is what Codecov, Coveralls and `genhtml` consume:
+
+```sh
+juliati --coverage-lcov lcov.info
+```
+
+It implies `--coverage`, so it is the only flag you need. For a line-by-line view in the editor, use [VS Code](./vscode#code-coverage).
 
 ## Bounds checking
 
@@ -126,13 +169,23 @@ The [`julia-run-testitems` action](./actions#julia-run-testitems) defaults to `y
 
 ## JSON results
 
-With `--results-json results.json` the complete run — every test item, its status, duration, failure messages with stack traces, and captured output — is written as JSON, suitable for further processing:
+With `--results-json results.json` the complete run — every test item, its status, duration, performance statistics, failure messages with stack traces, and captured output — is written as JSON, suitable for further processing:
 
 ```sh
 juliati --results-json results.json --progress log
 ```
 
 This is the file the [`julia-report-ci-results` action](./actions#julia-report-ci-results) consumes to build a CI job summary.
+
+## JUnit XML
+
+`--junit-xml junit.xml` writes the same run as JUnit XML, which most CI systems ingest natively:
+
+```sh
+juliati --junit-xml junit.xml
+```
+
+One `<testsuite>` per source file, one `<testcase>` per (test item, profile), with captured output in `<system-out>` and per-item performance statistics as `<properties>`. The JSON results are richer; the JUnit XML is far more portable. Writing both is fine.
 
 ## Exit codes
 

@@ -35,12 +35,19 @@ It installs its own pinned Julia environment, so you do not need to install Test
 | `test-path` | `.` | Directory to search for test items, relative to the workspace. |
 | `juliaup-channel` | `release` | Juliaup channel used for the test worker processes. |
 | `results-path` | — | Path to write the test-run results JSON. Mainly the integration point for `julia-report-ci-results`; leave unset when you are not aggregating results. |
+| `junit-path` | — | Path to write the test-run results as JUnit XML. Most CI test reporters consume this format; the results JSON is richer, but far less portable. |
+| `coverage-lcov-path` | — | Path to write the merged coverage of the run in LCOV format, for Codecov, Coveralls and similar. Implies `coverage`. |
+| `output-mode` | `issues` | Which captured test item output to echo into the job log: `issues` (only failing items), `all`, or `none`. Captured output is always present in the results JSON regardless. |
 | `env` | — | Environment variables for the test processes, as a JSON object string, e.g. `'{"FOO": "bar"}'` (not `KEY=VALUE` lines). |
 | `filter` | — | Julia expression over `name`, `tags`, `filename`, `package_name`; only items for which it is true are run, e.g. `':ci in tags'`. |
 | `profile-name` | `Default` | Profile name recorded in the results JSON. |
 | `testitem-timeout` | `1200` | Per-test-item timeout in seconds. |
 | `coverage` | `false` | Run the test processes in coverage mode. |
 | `max-workers` | the `juliati` default | Maximum number of parallel test processes. |
+| `threads` | Julia's own default | Value for the test processes' `--threads`, e.g. `4`, `auto`, `2,1`. |
+| `gc-between-testitems` | the `juliati` default | Run a full GC between test items: `true`, `false`, or unset for the default (on when more than one test process is used). See [Test Processes](./test-processes#gc-between-test-items). |
+| `memory-threshold` | off | Recycle a test process once system memory use exceeds this fraction (0–1). Experimental. See [Test Processes](./test-processes#memory-threshold-recycling). |
+| `schedule` | the `juliati` default | How test items are distributed over test processes: `duration` (the default) or `contiguous`. Set it to `contiguous` to rule the scheduler out when diagnosing a run. See [Test Processes](./test-processes#scheduling). |
 | `check-bounds` | `yes` | `--check-bounds` mode. `yes` forces bounds checks everywhere, matching `Pkg.test` semantics; `auto` respects `@inbounds` and reuses existing precompile caches. |
 | `annotations` | `true` | Emit GitHub error annotations for failed test items. |
 
@@ -53,6 +60,7 @@ This action defaults to `yes` — CI should prefer catching out-of-bounds bugs o
 | Output | Description |
 | --- | --- |
 | `results-path` | Path of the results JSON that was written (empty if none was). |
+| `junit-path` | Path of the JUnit XML that was written (empty if none was). |
 
 Note that when `annotations` is `true` and you did not set `results-path`, the action writes results to a temporary file anyway so it has something to annotate from — so this output may be non-empty even when you asked for no results file.
 

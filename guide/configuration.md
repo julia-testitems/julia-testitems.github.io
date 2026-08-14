@@ -131,9 +131,10 @@ reported**.
 
 `JuliaTestItems.toml` currently controls discovery scope only. Execution
 settings — worker counts, timeouts, environment variables, default tag filters,
-per-item defaults — are still set per surface: in VS Code settings, as flags to
-[DevREPL](./repl#run-flags) and [`juliati`](./cli#options), or as inputs in your
-[CI configuration](./ci).
+per-item defaults, and the [test process](./test-processes) settings for GC
+between test items, memory-threshold recycling and scheduling — are still set per
+surface: in VS Code settings, as flags to [DevREPL](./repl#run-flags) and
+[`juliati`](./cli#options), or as inputs in your [CI configuration](./ci).
 
 Those settings are planned as additional sections in this same file. The keys
 documented above will keep working when they arrive.

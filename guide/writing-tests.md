@@ -12,6 +12,19 @@ end
 
 Each `@testitem` has a **name** (a string) and a **code block**. The code inside must be self-contained — it cannot depend on variables or functions defined outside the block.
 
+### Keyword Arguments
+
+Between the name and the code block, a `@testitem` accepts four keyword arguments:
+
+| Keyword | Type | Default | Description |
+|---|---|---|---|
+| `tags` | `Vector{Symbol}` | `[]` | Tags for filtering which test items to run. See [Tags](#tags). |
+| `setup` | `Vector{Symbol}` | `[]` | Names of `@testmodule` or `@testsnippet` definitions to evaluate before the test item runs. See [Sharing Code Across Test Items](#sharing-code-across-test-items). |
+| `default_imports` | `Bool` | `true` | Whether to automatically `using Test` and `using YourPackage` before the test code. See [Default Imports](#default-imports). |
+| `skip` | `Bool` or expression | `false` | When `true`, the test item is not run and is reported as skipped. See [Skipping Test Items](#skipping-test-items). |
+
+Any other keyword argument is a test definition error, and is [reported as a diagnostic](./configuration#reporting-problems-in-test-items) rather than silently ignored.
+
 ### Default Imports
 
 By default, every `@testitem` automatically runs `using Test` and `using YourPackage`, so you can use `@test`, `@testset`, and anything exported from your package directly.
@@ -96,6 +109,36 @@ end
 ```
 
 Tags are `Symbol`s and can be used to filter which tests to run on every surface. See the [VS Code](./vscode#filtering-by-tags), [REPL](./repl#run-flags), [command line](./cli#filtering), [CI](./ci), and [Pkg.test](./pkg-test#filtering) guides for filtering details.
+
+## Skipping Test Items
+
+The `skip` keyword marks a test item as one that should not run. It is still discovered, still shown in the test tree, and reported as **skipped** rather than quietly disappearing:
+
+```julia
+@testitem "not ready yet" skip=true begin
+    @test false
+end
+```
+
+`skip` also accepts an arbitrary expression that evaluates to a `Bool`:
+
+```julia
+@testitem "needs a recent Julia" skip=(VERSION < v"1.11") begin
+    @test contains_new_feature()
+end
+
+@testitem "posix only" skip=Sys.iswindows() begin
+    @test run(`ls`).exitcode == 0
+end
+```
+
+::: tip The expression runs in the test process
+A `skip` expression is evaluated **in the test process**, immediately before the test item would have run — not by whatever discovered the test item.
+
+That is the whole point of it. The test processes may be running a different Julia version than the editor, the REPL or the CI runner driving them (`juliati --julia-cmd`, DevREPL's `+channel`, and a CI matrix all do exactly that), and on a remote or containerized setup they may not even be running on the same operating system. `VERSION` and `Sys.iswindows()` in a `skip` expression answer for the process that would actually run the test, which is the only answer that is ever correct.
+:::
+
+This is also why `skip` is not just a tag plus a filter: tags are literals resolved when the file is parsed, whereas `skip` is a question that can only be answered where the test runs.
 
 ## Sharing Code Across Test Items
 
