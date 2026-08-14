@@ -44,25 +44,46 @@ The mode is sticky — it stays active between commands. Press **Backspace** on 
 
 Tab completion works throughout: commands and subcommands, flag names, directories, and Juliaup channels.
 
-Test item commands all live under `test`, which can be shortened to `t`.
+Test item commands all live under `test`, which can be shortened to `t`. A
+subcommand is always required — a bare `test`, or a word that is not one of the
+subcommands below, lists the available commands and does nothing else.
 
 ## Running tests
 
 ### `test run`
 
-Run test items, blocking the REPL until complete. Press **Esc** to cancel.
+Run test items, blocking the REPL until complete.
 
 ```
 dev> test run [+channel] [path|name] [flags]
 ```
 
-A positional argument that is a directory is used as the path to scan (default: the current working directory); anything else is treated as a case-insensitive substring filter on the test item name.
+While the run is on screen, two keys work:
+
+| Key | Effect |
+| --- | --- |
+| **Esc** | Cancel the run. |
+| **b** | Send the run to the background and return to the prompt. It keeps going; pick it back up with [`test attach`](#test-attach). |
+
+Both are shown above the progress bar while a run is in flight.
+
+A positional argument that is a directory is used as the path to scan (default: the current working directory); anything else is treated as a case-insensitive substring filter on the test item name. `--name=` is the explicit spelling of that filter, and is how you match a name that happens to look like a path.
 
 ```
 dev> test run /path/to/myproject     # run everything in a project
 dev> test run parsing                # run items whose name contains "parsing"
+dev> test run --name=parsing         # the same, explicitly
 dev> test run +lts --workers=4
 dev> test run --tags=unit,fast
+```
+
+The run reports what detection found before it reports what the filters kept:
+
+```
+dev> test run zzzz
+  Discovered 184 test item(s) in 14 file(s)
+  Selected 0 of 184 after filtering on name "zzzz"
+  No test item matched the filter on name "zzzz". Use 'test list' to see what is there.
 ```
 
 ### `test pick`
@@ -73,9 +94,9 @@ Fuzzy-pick the test items to run from an interactive list. Space toggles an item
 dev> test pick [query] [path] [flags]
 ```
 
-A bare `test` with no arguments opens the picker too. This needs an interactive terminal; in a non-TTY session it reports an error instead.
+This needs an interactive terminal; in a non-TTY session it reports an error instead.
 
-### `test -`
+### `test repeat`
 
 Repeat the last test run with the same arguments.
 
@@ -83,24 +104,40 @@ Repeat the last test run with the same arguments.
 
 Rerun only the items that failed or errored in the last run. This is the fast inner loop: run everything once, then `test failed` until it is quiet.
 
-### `test run&`
+### `test run --bg`
 
 Run tests in the background. The REPL stays interactive so you can keep working.
 
 ```
-dev> test run& [same options as test run]
+dev> test run --bg [same options as test run]
 ```
 
-Use `test status` to monitor progress and `test results` to view them when done. Completion is reported the next time you run a command.
+Use `test status` to monitor progress and `test results` to view them when done. Completion is reported once, the next time you run a command.
+
+Several background runs can be in flight at once. Each is identified by its run number, and commands that act on a run take that number: `test attach 8`, `test cancel 8`. When exactly one run is active the number can be omitted; when more than one is, it is required rather than guessed.
+
+The worker allowance is shared rather than multiplied — a second concurrent run takes what is left of the budget instead of claiming a full set of its own, so background runs do not quietly fill the machine with Julia processes. An explicit `--workers=N` overrides that.
+
+### `test attach`
+
+Bring a background run back to the foreground — progress on screen, **Esc** to cancel, **b** to detach again. This is the counterpart to `b`: between them a run can move between foreground and background as often as you like, without ever being interrupted.
+
+```
+dev> test attach [id]
+```
+
+The run itself is unaffected either way; attaching only turns its progress display back on. Attaching to a run that has already finished shows its results instead.
 
 ## Run flags
 
 | Flag | Default | Description |
 | --- | --- | --- |
+| `--name=pattern` | — | Only run items whose name contains this substring (case-insensitive). |
 | `--tags=t1,t2` | — | Only run items carrying at least one of these tags. |
 | `--workers=N` | `min(Sys.CPU_THREADS, 8)` | Maximum number of parallel worker processes. |
 | `--timeout=S` | `300` | Per-test-item timeout in seconds. |
 | `--coverage` | off | Enable code coverage measurement. |
+| `--bg` | off | Run in the background instead of blocking the REPL. |
 | `+channel` | current Julia | Juliaup channel to run the tests under, e.g. `+lts`, `+release`, `+nightly`. |
 
 ::: warning Flags need an `=`
@@ -131,7 +168,7 @@ dev> test results [id] [--name=pattern] [--verbose] [--output]
 
 The default output is a summary with color-coded counts followed by the details of any failures. `res` is a shorthand.
 
-### `@`
+### `test failures`
 
 Browse the failures of the last run interactively. For each failure you can go back to the list, **open it in your editor** (honoring `JULIA_EDITOR`), or quit. In a non-TTY session it simply prints all failures.
 
@@ -145,39 +182,55 @@ dev> test list [path] [--tags=t1,t2]
 
 `ls` is a shorthand.
 
-### `test runs`
+### `test history`
 
 Show the run history as a table of ID, start time, duration, status, test count, and path.
 
 ```
-dev> test runs [--active]
+dev> test history [--active]
 ```
 
-Only the most recent 20 runs are kept.
+Status is one of `running`, `completed`, `cancelled` or `errored`. Only the most recent 20 runs are kept.
 
 ### `test status`
 
-Show the state and live progress of the current background run. `st` is a shorthand.
+Show every run currently in progress, with its live progress. `st` is a shorthand.
+
+```
+dev> test status
+Active runs:
+
+  #     Elapsed   Progress    Detail
+  ────────────────────────────────────────────────────────────
+  2     10.5s     14/184      14 passed
+  1     10.5s     36/184      36 passed
+
+2 runs active. 'test attach <id>' to watch one, 'test cancel <id>' to stop one.
+```
+
+A run whose test items have all reported but which is still shutting down shows `finishing…`.
 
 ### `test cancel`
 
-Cancel the active background run, or a specific one by ID.
+Cancel a run. With one run active the id may be omitted; with several it is required.
 
 ```
 dev> test cancel [id]
 ```
 
+A cancelled run is recorded as `cancelled` in `test history`, distinct from one that ran to completion.
+
 ## Managing test processes
 
-Test processes stay alive between runs so repeated runs start fast.
+Test processes stay alive between runs so repeated runs start fast. Process ids are shown shortened; every command that takes one matches on a prefix, so the short form is what you type.
 
 | Command | Description |
 | --- | --- |
-| `test procs` | List active test processes with their ID, package, and status. Aliases: `processes`, `ps`. |
+| `test procs` | List active test processes with their ID, package, status and uptime. Alias: `ps`. |
 | `test kill [process-id]` | Kill all test processes, or one by ID (prefix matching works). |
-| `test plog <process-id>` | Show the raw captured output of a test process. Alias: `process-log`. |
+| `test log <process-id>` | Show the raw captured output of a test process. |
 
-`test plog` is what you want when a whole test process died before running anything — a precompilation error, for instance, whose cause never made it into a test result.
+`test log` is what you want when a whole test process died before running anything — a precompilation error, for instance, whose cause never made it into a test result.
 
 ## `help`
 
@@ -187,18 +240,26 @@ dev> help
 
 Shows a summary of every command. `?` is a shorthand.
 
-## Renamed commands
+## Command summary
 
-The test commands used to sit at the top level and are now grouped under `test`. The old spellings are no longer accepted; DevREPL will point you at the replacement if you use one.
-
-| Old | New |
+| Command | Aliases |
 | --- | --- |
-| `run`, `run&` | `test run`, `test run&` |
-| `list`, `ls` | `test list` |
-| `status`, `st` | `test status` |
-| `cancel` | `test cancel` |
-| `results`, `res` | `test results` |
-| `runs` | `test runs` |
-| `processes`, `procs`, `ps` | `test procs` |
-| `kill` | `test kill` |
-| `plog`, `process-log` | `test plog` |
+| `test run [path\|name] [flags]` | — |
+| `test run --bg` | — |
+| `test attach [id]` | — |
+| `test pick [query] [path]` | — |
+| `test failed` | — |
+| `test repeat` | — |
+| `test list [path]` | `test ls` |
+| `test results [id]` | `test res` |
+| `test failures` | — |
+| `test history [--active]` | — |
+| `test status` | `test st` |
+| `test cancel [id]` | — |
+| `test procs` | `test ps` |
+| `test kill [id]` | — |
+| `test log <id>` | — |
+| `lint [path]`, `format [path]` | — |
+| `help` | `?` |
+
+`test` itself can be shortened to `t` throughout.
