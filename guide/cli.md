@@ -187,6 +187,37 @@ juliati --junit-xml junit.xml
 
 One `<testsuite>` per source file, one `<testcase>` per (test item, profile), with captured output in `<system-out>` and per-item performance statistics as `<properties>`. The JSON results are richer; the JUnit XML is far more portable. Writing both is fine.
 
+## Test item ids
+
+Both output formats identify each test item by an id that looks like this:
+
+```
+MyPkg@a1b2c3d4/test/parsing_tests.jl::parses floats
+```
+
+That is `<package>/<path>::<name>`. The package is its name plus the first eight hex digits
+of its UUID — the name is what you recognise, and the UUID fragment separates two different
+packages that happen to share a name, such as a vendored copy beside a dev checkout. The path
+is relative to the package root and always uses `/`, so an id is identical on Windows and
+Linux, and identical in a dev checkout and on a CI runner. That last property is what makes
+ids usable for tracking a test across runs.
+
+Ids are stable under editing: inserting or removing other test items does not change them.
+The one exception is two test items sharing a name in one file, which is a definition error —
+every occurrence is then suffixed `#1`, `#2`, … so each stays individually addressable.
+
+An id identifies a test item **within its package**, not within a workspace. The same package
+checked out into two folders produces the same id from both, deliberately: two checkouts
+differ only by location, and location differs between your machine and CI, so an id cannot be
+both unique across a workspace and portable across machines. Where the difference matters —
+the console output, the `uri` field in the JSON results, and the `classname` in the JUnit XML —
+the file path distinguishes them.
+
+::: tip
+The progress output above shows `test/test_parsing.jl:parse basics`, which is a display
+form, not an id. Ids appear in `--results-json` and `--junit-xml`.
+:::
+
 ## Exit codes
 
 | Code | Meaning |
