@@ -20,6 +20,7 @@ export default defineConfig({
         text: 'Guide',
         items: [
           { text: 'Getting Started', link: '/guide/getting-started' },
+          { text: 'Example', link: '/guide/example' },
           { text: 'Writing Tests', link: '/guide/writing-tests' },
           { text: 'Configuration', link: '/guide/configuration' },
           { text: 'VS Code', link: '/guide/vscode' },

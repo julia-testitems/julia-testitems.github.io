@@ -35,6 +35,8 @@ Test items can be placed anywhere in your package:
 
 See [Writing Tests](./writing-tests) for the full syntax reference.
 
+To see all of this applied to a complete package — tests, `Pkg.test` compatibility, CI, formatting and docs — read the [Example](./example) walkthrough.
+
 ## Running Tests
 
 ### In VS Code
