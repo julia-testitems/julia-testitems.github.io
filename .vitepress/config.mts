@@ -32,6 +32,7 @@ export default defineConfig({
           { text: 'CI Integration', link: '/guide/ci' },
           { text: 'GitHub Actions', link: '/guide/actions' },
           { text: 'AI Agents (MCP)', link: '/guide/mcp' },
+          { text: 'Projects Using Test Items', link: '/guide/users' },
         ],
       },
     ],
