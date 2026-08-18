@@ -67,7 +67,7 @@ Options can be written as `--opt value` or `--opt=value`.
 | `--junit-xml <path>` | not written | Write the test run results as JUnit XML to this file. |
 | `--profile-name <name>` | `"Default"` | Profile name recorded in the results. |
 | `--env <KEY=VALUE>` | — | Environment variable for test processes. Repeatable. |
-| `--env-json <json>` | — | JSON object of environment variables for test processes; a `null` value removes the variable. |
+| `--env-json <json>` | — | JSON object of environment variables for test processes; a `null` value removes the variable. Note that `JULIA_PROJECT`, `JULIA_LOAD_PATH` and `JULIA_DEPOT_PATH` are removed from test processes unless set here — see [Environments](./environments#juliati-and-the-github-action). |
 | `--juliaup-channel <channel>` | — | Set `JULIAUP_CHANNEL` for test processes. |
 | `--julia-cmd <path>` | `julia` | Julia executable used for test processes. |
 | `--check-bounds <auto\|yes>` | `auto` | `--check-bounds` mode for test processes. See [below](#bounds-checking). |

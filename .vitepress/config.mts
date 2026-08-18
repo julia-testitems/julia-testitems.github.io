@@ -26,6 +26,7 @@ export default defineConfig({
           { text: 'VS Code', link: '/guide/vscode' },
           { text: 'REPL', link: '/guide/repl' },
           { text: 'Command Line', link: '/guide/cli' },
+          { text: 'Environments', link: '/guide/environments' },
           { text: 'Test Processes', link: '/guide/test-processes' },
           { text: 'Legacy Pkg.test', link: '/guide/pkg-test' },
           { text: 'CI Integration', link: '/guide/ci' },

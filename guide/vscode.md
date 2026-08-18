@@ -23,6 +23,8 @@ You can run test items from multiple places in the VS Code UI:
 
 ![Test run button](/images/vscode/testrunbutton.png)
 
+Test items run in a `Pkg.test`-style environment for the package that owns the file; the environment selected in the status bar can supply the manifest if it `dev`s that package. See [Environments](./environments#vs-code) for the rules.
+
 Test results appear inline in the editor. When a test fails, the extension shows the failure details directly at the line where the `@test` failed — no scrolling through REPL output.
 
 ![Test error detail](/images/vscode/testerrordetail.png)

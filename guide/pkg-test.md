@@ -8,7 +8,7 @@ For running tests yourself — locally or in CI — prefer the [`juliati` comman
 `Pkg.test` integration still matters when something *else* insists on calling `Pkg.test()`: package registries and their automated checks, downstream integration testing, `] test` habits, and any CI you have not migrated. Keeping a `test/runtests.jl` around costs you nothing and makes your package behave like every other Julia package.
 :::
 
-The two approaches are not exclusive. The same `@testitem` blocks work under both, so a package can ship a `runtests.jl` for compatibility while you use `juliati` day to day.
+The two approaches are not exclusive. The same `@testitem` blocks work under both, so a package can ship a `runtests.jl` for compatibility while you use `juliati` day to day. They also build the same kind of test environment — see [Environments](./environments) for what test items run in outside of `Pkg.test`.
 
 ## Setup
 

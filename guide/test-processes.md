@@ -10,11 +10,11 @@ Test processes **outlive the run that created them**. When a run finishes, its p
 
 This is the single largest performance property of the framework, because the cost a test process pays at startup is not small: Julia itself has to start, the test environment has to be activated, and your package and all its dependencies have to be loaded. On a package of any size that is seconds, per process, and it is paid before a single `@test` has run. A pooled process has paid it already.
 
-The pool is keyed by the *environment* a test item needs — its package, its Julia version, its environment variables, its coverage and bounds-checking settings. A run that asks for the same environment as the last one reuses its processes. A run that asks for something different gets new ones, and the old ones stay around for the next time they match.
+The pool is keyed by the *environment* a test item needs — its package and project (see [Environments](./environments) for how those are chosen), its Julia version, its environment variables, its coverage and bounds-checking settings. A run that asks for the same environment as the last one reuses its processes. A run that asks for something different gets new ones, and the old ones stay around for the next time they match.
 
 Two things invalidate a pooled process rather than reusing it:
 
-- **The environment changed.** If the project or manifest content changed since the process was started, its loaded packages are stale in a way no amount of reloading can fix, and it is restarted.
+- **The environment changed.** If the content of the [chosen project's](./environments#step-2-which-project-supplies-the-manifest) `Project.toml` or `Manifest.toml` changed since the process was started, its loaded packages are stale in a way no amount of reloading can fix, and it is restarted.
 - **You terminate it.** VS Code offers **Stop Test Process** in the Julia Workspace panel, DevREPL has [`test kill`](./repl#managing-test-processes). Both are the way out if a process gets into a state you do not trust.
 
 ### Revise-based hot reload
