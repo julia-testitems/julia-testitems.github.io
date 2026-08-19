@@ -279,7 +279,7 @@ end
 - [**GitHub Actions**](/guide/actions) — The individual actions the workflow is built from, usable on their own.
 - [**TestItemRunner.jl**](https://github.com/julia-vscode/TestItemRunner.jl) — Runs test items under `Pkg.test`, for compatibility with the traditional workflow. — [guide](/guide/pkg-test)
 
-Under the hood, discovery is powered by [JuliaWorkspaces.jl](https://github.com/julia-vscode/JuliaWorkspaces.jl) and [TestItemDetection.jl](https://github.com/julia-testitems/TestItemDetection.jl), and execution by [TestItemControllers.jl](https://github.com/julia-vscode/TestItemControllers.jl) — the same engines every surface above shares.
+Under the hood, discovery is powered by [JuliaWorkspaces.jl](https://github.com/julia-vscode/JuliaWorkspaces.jl) and [TestItemDetection.jl](https://github.com/julia-testitems/TestItemDetection.jl), and execution by [TestItemControllers.jl](https://github.com/julia-vscode/TestItemControllers.jl) — the same engines every surface above shares. [TestItemRuns.jl](https://github.com/julia-testitems/TestItemRuns.jl) packages them into one Julia API for building your own tools; see [Integrating](/integrating/overview).
 
 </div>
 

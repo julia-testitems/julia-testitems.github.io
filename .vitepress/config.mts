@@ -12,6 +12,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'Integrating', link: '/integrating/overview' },
       { text: 'GitHub', link: 'https://github.com/julia-testitems' },
     ],
 
@@ -33,6 +34,17 @@ export default defineConfig({
           { text: 'GitHub Actions', link: '/guide/actions' },
           { text: 'AI Agents (MCP)', link: '/guide/mcp' },
           { text: 'Projects Using Test Items', link: '/guide/users' },
+        ],
+      },
+      {
+        text: 'Integrating',
+        items: [
+          { text: 'Overview', link: '/integrating/overview' },
+          { text: 'TestItemRuns.jl API', link: '/integrating/testitemruns' },
+          { text: 'JuliaWorkspaces & TestItemControllers', link: '/integrating/julia-apis' },
+          { text: 'Language Server Protocol Extension', link: '/integrating/language-server' },
+          { text: 'TestItemControllers JSON-RPC', link: '/integrating/jsonrpc' },
+          { text: 'Result Formats', link: '/integrating/results' },
         ],
       },
     ],

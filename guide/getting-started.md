@@ -91,3 +91,7 @@ using TestItemRunner
 ```
 
 This discovers and runs all `@testitem`s in your package via the standard `Pkg.test` entry point. See [Legacy Pkg.test Integration](./pkg-test) for filtering and for when this is worth doing.
+
+## Building tools on top
+
+Everything above is a front end over the same discovery and execution engines. If you are writing your own tool — a runner, an editor integration, a CI reporter — start with the [Integrating](../integrating/overview) chapter, which describes the [TestItemRuns.jl](../integrating/testitemruns) API, the lower-level Julia APIs, the language server protocol extension and the JSON-RPC protocol.
