@@ -86,6 +86,7 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.matrix.outputs.test-matrix) }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.allow-failure }}
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/install-juliaup@v3
@@ -103,7 +104,7 @@ jobs:
 | `include-lts-versions` | `true` | Include the current Julia LTS version. |
 | `include-smallest-compatible-minor-versions` | `true` | Include the smallest minor version compatible with the compat bound. |
 | `include-all-compatible-minor-versions` | `false` | Include the latest patch of every compatible minor version. |
-| `include-rc-versions` | `false` | Include the rc channel (skipped if it resolves to a version already in the matrix). |
+| `include-rc-versions` | `false` | Include the rc channel (skipped if it resolves to a version already in the matrix). Note this is the *action* default; the [reusable workflow](./ci#julia-version-matrix) turns it on. |
 | `include-beta-versions` | `false` | Include the beta channel (same caveat). |
 | `include-alpha-versions` | `false` | Include the alpha channel (same caveat). |
 | `include-nightly-versions` | `false` | Include the nightly channel. |
@@ -113,16 +114,22 @@ jobs:
 | `include-windows-x86` | `true` | Windows x86 (`windows-latest`). |
 | `include-macos-x64` | `true` | macOS x64 (`macos-26-intel`). |
 | `include-macos-aarch64` | `true` | macOS aarch64 (`macos-26`). |
+| `allow-failure` | `rc,beta,alpha,nightly` | Globs marking legs that may fail without failing the workflow, matched against `<juliaup-channel>:<os>`. Parts a pattern leaves out are filled in with wildcards, so `rc` covers every architecture and runner and `*~x86` every 32-bit leg. `none` marks nothing. |
 
 ### Outputs
 
 | Output | Description |
 | --- | --- |
-| `test-matrix` | JSON array of `{"os", "juliaup-channel", "experimental"}` entries for `strategy.matrix.include` via `fromJson`. `juliaup-channel` has the form `<version>~<arch>` or `<rc\|beta\|alpha\|nightly>~<arch>`; `experimental` is `true` for pre-release entries. |
+| `test-matrix` | JSON array of `{"os", "juliaup-channel", "experimental", "allow-failure"}` entries for `strategy.matrix.include` via `fromJson`. `juliaup-channel` has the form `<version>~<arch>` or `<rc\|beta\|alpha\|nightly>~<arch>`. |
+
+`experimental` and `allow-failure` are independent. `experimental` is a fact about the leg — it
+is `true` for pre-release channels. `allow-failure` is a policy decision: `true` when the leg
+matched the `allow-failure` input, which is what you feed to `continue-on-error`. A stable leg
+can be allowed to fail, and a pre-release leg can be made blocking.
 
 ## julia-report-ci-results
 
-Renders a single job summary from the test-result JSON files produced across your matrix, plus optional lint SARIF. It merges and deduplicates results across matrix legs and profiles, and uploads the full test process outputs as a `test-process-logs` artifact.
+Renders a single job summary from the test-result JSON files produced across your matrix, plus optional lint SARIF. It merges and deduplicates results across matrix legs and profiles, and uploads the full test process outputs as a `test-process-logs` artifact. Results handed to it as [allowed to fail](./ci#legs-allowed-to-fail) are reported under an *(allowed to fail)* heading with a ⚠️ and never fail the step.
 
 This action needs no Julia, no checkout, and no token, and makes no GitHub API calls — so it works on pull requests from forks.
 
@@ -135,14 +142,25 @@ report:
     - uses: actions/download-artifact@v8
       with:
         path: testresults
-        pattern: testresults-*
+        pattern: testitemresults-blocking-*
+        merge-multiple: true
+    - uses: actions/download-artifact@v8
+      with:
+        path: allowfailresults
+        pattern: testitemresults-allowfail-*
         merge-multiple: true
     - uses: julia-actions/julia-report-ci-results@v2
       with:
         results-path: testresults
+        allowed-failure-results-path: allowfailresults
 ```
 
 Have the test jobs upload the file that `julia-run-testitems` wrote (via its `results-path` input) as an artifact, then download them all here.
+
+Which directory a file lands in is what makes its failures blocking or not — so a leg that is
+allowed to fail uploads under a different artifact name. Splitting by directory rather than by
+profile name is deliberate: test definition errors carry no profile, and a leg that dies before
+writing results has none at all, so neither could be classified any other way.
 
 ### Inputs
 
@@ -150,8 +168,9 @@ Have the test jobs upload the file that `julia-run-testitems` wrote (via its `re
 | --- | --- | --- |
 | `results-path` | **required** | Directory containing test-result `*.json` files as written by `julia-run-testitems`. |
 | `lint-results-path` | — | Directory containing lint `*.sarif` file(s); may be missing or empty if lint was skipped. |
-| `fail-on-missing-results` | `true` | Fail when no test-result files are found. |
-| `fail-on-test-failures` | `true` | Fail when there are failing test items or test definition errors. |
+| `allowed-failure-results-path` | — | Directory of test-result `*.json` files from legs allowed to fail. Their failures are reported but never fail the step. |
+| `fail-on-missing-results` | `true` | Fail when no test-result files are found in `results-path`. Files in `allowed-failure-results-path` do not count — if every blocking leg failed to report, that is still a failure. |
+| `fail-on-test-failures` | `true` | Fail when there are failing test items or test definition errors on a blocking leg. |
 | `fail-on-lint-errors` | `true` | Fail when there are error-severity lint results. |
 | `process-logs-retention-days` | repository default | Retention for the uploaded `test-process-logs` artifact. |
 
@@ -159,9 +178,10 @@ Have the test jobs upload the file that `julia-run-testitems` wrote (via its `re
 
 | Output | Description |
 | --- | --- |
-| `failed` | Whether any CI issues were found, independent of the `fail-on-*` settings. |
+| `failed` | Whether any blocking CI issues were found, independent of the `fail-on-*` settings. Issues confined to legs allowed to fail do not set it. |
 | `test-count` | Number of distinct test items in the report. |
-| `failed-count` | Number of test items with issues. |
+| `failed-count` | Number of test items with issues on a leg that must pass. |
+| `allowed-failure-count` | Number of test items whose only issues are on legs allowed to fail. |
 | `definition-error-count` | Number of test definition errors. |
 | `lint-error-count` | Number of error-severity lint results. |
 | `process-logs-artifact-id` | ID of the uploaded artifact (empty when nothing was uploaded). |
