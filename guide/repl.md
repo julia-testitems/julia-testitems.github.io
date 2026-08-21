@@ -135,7 +135,7 @@ The run itself is unaffected either way; attaching only turns its progress displ
 | `--name=pattern` | — | Only run items whose name contains this substring (case-insensitive). |
 | `--tags=t1,t2` | — | Only run items carrying at least one of these tags. |
 | `--workers=N` | `min(Sys.CPU_THREADS, 8)` | Maximum number of parallel worker processes. |
-| `--timeout=S` | `300` | Per-test-item timeout in seconds. Note this is shorter than the `1200` that [`juliati`](./cli#options) and the [CI action](./actions#julia-run-testitems) default to — an interactive run is better off telling you something is stuck. |
+| `--timeout=S\|none` | *(none)* | Per-test-item timeout in seconds. Off by default, as on [`juliati`](./cli#options) and in [CI](./actions#julia-run-testitems). See [Hang diagnostics](./test-processes#hang-diagnostics). |
 | `--coverage` | off | Enable code coverage measurement. |
 | `--bg` | off | Run in the background instead of blocking the REPL. |
 | `+channel` | current Julia | Juliaup channel to run the tests under, e.g. `+lts`, `+release`, `+nightly`. |

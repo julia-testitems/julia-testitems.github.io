@@ -57,14 +57,18 @@ In CI: the [`memory-threshold` input](./actions#julia-run-testitems).
 
 ## Hang diagnostics
 
-Every test item runs under a timeout — 1200 seconds by default on the [command line](./cli#options) and in [CI](./actions#julia-run-testitems), 300 in [DevREPL](./repl#run-flags). When it expires, the controller kills the test process and reports the item as errored.
+**No test item runs under a timeout unless you ask for one.** How long a test item legitimately takes is not something the tooling can know, and a timeout that fires is unrecoverable: the controller kills the test process and reports the item as errored. Defaulting to a deadline would mean a legitimately slow test item on a slow machine fails a build for no reason, with no way to opt out. Set one with `--timeout` on the [command line](./cli#options) or in [DevREPL](./repl#run-flags), and the [`testitem-timeout` input](./actions#julia-run-testitems) in CI.
 
-A timed-out test item does not just leave one line behind. Shortly before the deadline, a watchdog **inside the test process** dumps a CPU profile and the backtraces of every task to disk. The controller reads that dump when its own timeout fires and attaches it to the timed-out item's output. So instead of "timed out after 1200s" you get the stack of exactly where the process was stuck — usually enough to name the culprit without reproducing the hang.
+That makes the timeout a diagnostic you reach for, and it is a good one. A timed-out test item does not just leave one line behind. Shortly before the deadline, a watchdog **inside the test process** dumps a CPU profile and the backtraces of every task to disk. The controller reads that dump when its own timeout fires and attaches it to the timed-out item's output. So instead of "timed out after 600s" you get the stack of exactly where the process was stuck — usually enough to name the culprit without reproducing the hang.
+
+::: tip Diagnosing a hang
+This is the whole reason to set a timeout, so set one when you have a hang to chase. Without a deadline nothing interrupts the stuck item: the run continues until whatever bounds it from outside does — on GitHub Actions, the job's own `timeout-minutes` (360 by default) — and because the item is never reported, **nothing tells you which test item hung.** Pick a value comfortably above your slowest item, re-run, and read the dump.
+:::
 
 The watchdog runs on a thread of its own and avoids everything that a wedged process cannot service, so it works even when the test item has blocked the main thread, and it works the same way on Linux, macOS and Windows. This is switched on always; there is nothing to configure.
 
 ::: warning One case it cannot diagnose
-A test item that neither allocates nor yields — a tight numeric loop, a blocking `ccall` — never reaches a safepoint, so no other Julia code in that process can run, the watchdog included. Nothing is dumped, and the controller's timeout is the backstop that ends the run. If a hang produces no diagnostics at all, that is the shape of it, and it is a strong hint about where to look.
+A test item that neither allocates nor yields — a tight numeric loop, a blocking `ccall` — never reaches a safepoint, so no other Julia code in that process can run, the watchdog included. Nothing is dumped, and if you set a timeout the controller's is the backstop that ends the run. If a hang produces no diagnostics at all, that is the shape of it, and it is a strong hint about where to look.
 :::
 
 ## Scheduling
