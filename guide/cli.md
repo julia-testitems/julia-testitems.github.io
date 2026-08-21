@@ -52,7 +52,7 @@ Options can be written as `--opt value` or `--opt=value`.
 | Option | Default | Description |
 | --- | --- | --- |
 | `--filter <expr>` | run everything | Julia expression over `name`, `tags`, `filename`, `package_name`; only items for which it evaluates to `true` are run. |
-| `--timeout <seconds\|none>` | `1200` | Per-test-item timeout in seconds. `none` disables it. |
+| `--timeout <seconds\|none>` | *(none)* | Per-test-item timeout in seconds. Off by default; `none` also spells that explicitly. See [Hang diagnostics](./test-processes#hang-diagnostics). |
 | `--max-workers <n>` | `min(Sys.CPU_THREADS, 8)` | Maximum number of parallel test processes. |
 | `--threads <n\|auto\|n,m>` | Julia's own default | Value for the test processes' `--threads`. |
 | `--progress <bar\|log\|none>` | `bar` | Progress output style. |

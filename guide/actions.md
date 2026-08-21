@@ -41,7 +41,7 @@ It installs its own pinned Julia environment, so you do not need to install Test
 | `env` | — | Environment variables for the test processes, as a JSON object string, e.g. `'{"FOO": "bar"}'` (not `KEY=VALUE` lines). |
 | `filter` | — | Julia expression over `name`, `tags`, `filename`, `package_name`; only items for which it is true are run, e.g. `':ci in tags'`. |
 | `profile-name` | `Default` | Profile name recorded in the results JSON. |
-| `testitem-timeout` | `1200` | Per-test-item timeout in seconds. |
+| `testitem-timeout` | *(none)* | Per-test-item timeout in seconds. Unset by default — see [Hang diagnostics](./test-processes#hang-diagnostics) for when it is worth setting. |
 | `coverage` | `false` | Run the test processes in coverage mode. |
 | `max-workers` | the `juliati` default | Maximum number of parallel test processes. |
 | `threads` | Julia's own default | Value for the test processes' `--threads`, e.g. `4`, `auto`, `2,1`. |

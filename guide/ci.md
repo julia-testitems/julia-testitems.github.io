@@ -106,7 +106,7 @@ A `.JuliaFormatter.toml` is **not** honored — configuration comes from `JuliaF
 
 | Option | Default | Description |
 |---|---|---|
-| `testitem-timeout` | `1200` | Per-test-item timeout in seconds |
+| `testitem-timeout` | *(none)* | Per-test-item timeout in seconds. Unset by default — see [Hang diagnostics](./test-processes#hang-diagnostics) |
 | `filter` | `""` | Julia expression to filter test items (can reference `name`, `tags`, `filename`, `package_name`) |
 | `env` | `""` | JSON string of environment variables, e.g. `'{"FOO": "BAR"}'` |
 | `github_job_prep_script` | | Path to a Julia script run once per worker before tests |
