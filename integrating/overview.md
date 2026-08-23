@@ -54,7 +54,7 @@ A few ideas show up under different names in every API below. Knowing them once 
 | JuliaWorkspaces.jl | [julia-vscode/JuliaWorkspaces.jl](https://github.com/julia-vscode/JuliaWorkspaces.jl) | registered |
 | TestItemControllers.jl | [julia-vscode/TestItemControllers.jl](https://github.com/julia-vscode/TestItemControllers.jl) · [docs](https://julia-testitems.org/TestItemControllers.jl/) | registered |
 | TestItemRuns.jl | [julia-testitems/TestItemRuns.jl](https://github.com/julia-testitems/TestItemRuns.jl) | prerelease |
-| TestItemApp.jl (`juliati`) | [julia-testitems/TestItemApp.jl](https://github.com/julia-testitems/TestItemApp.jl) | prerelease |
+| TestItemApp.jl (`juliati`) | [julia-testitems/TestItemApp.jl](https://github.com/julia-testitems/TestItemApp.jl) | registered |
 | DevREPL.jl | [julia-vscode/DevREPL.jl](https://github.com/julia-vscode/DevREPL.jl) | prerelease |
 | JuliaMCP.jl | [julia-vscode/JuliaMCP.jl](https://github.com/julia-vscode/JuliaMCP.jl) | prerelease |
 | LanguageServer.jl | [julia-vscode/LanguageServer.jl](https://github.com/julia-vscode/LanguageServer.jl) | registered |

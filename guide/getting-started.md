@@ -56,10 +56,6 @@ See [VS Code Integration](./vscode) for details.
 juliati
 ```
 
-::: warning Prerelease
-TestItemApp.jl is currently a prerelease package and is not yet registered.
-:::
-
 See [Command Line](./cli) for installation, filtering, coverage, and JSON output.
 
 ### In the REPL

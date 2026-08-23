@@ -1,20 +1,15 @@
 # Command Line
 
-::: warning Prerelease
-[TestItemApp.jl](https://github.com/julia-vscode/TestItemApp.jl) is currently a prerelease package and is not yet registered. The command line interface may change before the first stable release.
-:::
-
 TestItemApp.jl installs a `juliati` executable that discovers every test item under a folder and runs them in parallel test processes. No editor, no `test/runtests.jl`, and no `julia --project -e '...'` incantation required.
 
 Discovery and execution use exactly the same engines as the [VS Code extension](./vscode), so `juliati` finds the same test items the editor shows you and honors the same [`JuliaTestItems.toml`](./configuration) configuration.
 
 ## Installation
 
-`juliati` is a [Julia app](https://pkgdocs.julialang.org/dev/apps/) and requires **Julia 1.12 or newer**:
+`juliati` is a [Julia app](https://pkgdocs.julialang.org/dev/apps/) and requires **Julia 1.12 or newer**. Install it with the `app` command in the package REPL:
 
-```julia
-using Pkg
-Pkg.Apps.add(url="https://github.com/julia-vscode/TestItemApp.jl")
+```
+pkg> app add TestItemApp
 ```
 
 This installs the `juliati` executable into `~/.julia/bin`. Make sure that directory is on your `PATH`.
