@@ -23,7 +23,7 @@ add_folder_from_disc!(jw, "path/to/MyPackage")
 add_file_from_disc!(jw, "path/to/MyPackage/test/new_tests.jl")   # a file appeared
 update_file_from_disc!(jw, "path/to/MyPackage/test/parsing_tests.jl")   # a file changed
 remove_file!(jw, JuliaWorkspaces.filepath2uri("path/to/MyPackage/test/old_tests.jl"))  # a file went away
-set_active_project!(jw, JuliaWorkspaces.filepath2uri("path/to/some/env"))   # fallback environment for files outside any project
+set_active_project!(jw, JuliaWorkspaces.filepath2uri("path/to/some/env"))   # fallback env; as a test project only if it has a manifest that devs the package
 ```
 
 `workspace_from_folders(folders; store_path, …)` is what every one-shot tool uses; a long-lived tool (an editor, an MCP server) keeps one workspace and feeds it file changes. The workspace is **not thread-safe**: hold your own lock around every call if a file watcher and a request handler both touch it.
@@ -57,7 +57,7 @@ Notes:
 - `option_skip` is either a `Bool` or the *source text* of the `skip=` expression, which the test process evaluates just before running the item.
 - Test items outside a Julia package produce only a `TestErrorDetail` ("Test items must be defined inside a Julia package").
 - `id` is package-scoped (`MyPkg@a1b2c3d4/test/file.jl::name`); identify items by `(id, package_uri)`. See [the shared concepts](./overview#concepts-every-layer-shares).
-- `get_test_env` implements the environment rules of [Environments](../guide/environments): the file's owning package, the project that supplies the manifest (or the active project when the file's own project has no manifest), and a content hash that changes when Project/Manifest change.
+- `get_test_env` implements the environment rules of [Environments](../guide/environments): the file's owning package, the project that supplies the manifest (or the active project when no folder above the file has both a project file and a manifest — and either way only if it is the package folder or `dev`s the package), and a content hash that changes when any file the environment is built from changes.
 - Discovery honors [`JuliaTestItems.toml`](../guide/configuration).
 
 ## Execution with TestItemControllers

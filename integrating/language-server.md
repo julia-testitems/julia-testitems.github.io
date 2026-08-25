@@ -112,13 +112,13 @@ Result:
 | `packageName` | string, optional | The package the file belongs to. |
 | `packageUri` | string, optional | URI of the package root folder. |
 | `projectUri` | string, optional | URI of the project that supplies the manifest — see [Environments](../guide/environments). |
-| `envContentHash` | string, optional | Changes when the environment's Project/Manifest content changes. |
+| `envContentHash` | string, optional | Changes when any file the environment is built from changes: the chosen project's Project/Manifest, the package's own pair, and the package's `test/Project.toml`/`test/Manifest.toml`. |
 
 Each field is absent when unknown (a file outside any package has none). The four values are exactly the `packageName`, `packageUri`, `projectUri` and `envContentHash` fields of a TestItemControllers [`TestEnvironment`](./jsonrpc#testenvironment).
 
 ## `julia/setEnvironmentPath` (client → server)
 
-`{ "envPath": "/path/to/environment" }` — tells the server which Julia environment the editor considers active. It becomes the fallback environment for files outside any project and the fallback test project when a package has no manifest of its own ([Environments](../guide/environments) explains the rules).
+`{ "envPath": "/path/to/environment" }` — tells the server which Julia environment the editor considers active. It becomes the fallback environment for files outside any project, and the fallback test project when no folder above the file is a project — that is, when none has both a project file and a manifest. As a test project it is subject to the same rule as any other: it is used only if it is the package folder itself or its manifest `dev`s the package ([Environments](../guide/environments) explains the rules).
 
 ## From publish to run
 

@@ -63,7 +63,7 @@ Response:
 | `mode` | string | `"Normal"`, `"Coverage"` or `"Debug"`. |
 | `packageName`, `packageUri` | string | The package under test. |
 | `projectUri` | string, optional | The project supplying the manifest ([Environments](../guide/environments)). |
-| `envContentHash` | string, optional | Changes when Project/Manifest change; a pooled process is revised when it matches and restarted when it differs. |
+| `envContentHash` | string, optional | Changes when any file the environment is built from changes — the chosen project's Project/Manifest, the package's own pair, and the package's `test/Project.toml`/`test/Manifest.toml`. A pooled process is revised when it matches and restarted when it differs. |
 | `checkBounds` | string, optional | `"auto"` (default) or `"yes"`; see [`juliati --check-bounds`](../guide/cli#bounds-checking). |
 
 These are exactly the values the language server returns from [`julia/getTestEnv`](./language-server#julia-gettestenv-client-→-server).
