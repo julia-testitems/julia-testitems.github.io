@@ -72,44 +72,32 @@ automatically — write `/` and it works everywhere.
 
 ## Where the file applies
 
-**The nearest `JuliaTestItems.toml` governs a file, and only that one.**
+**Every `JuliaTestItems.toml` above a file has a say, and all of them must agree.**
 
-To decide whether a file is searched, the framework walks up from that file's
-folder and uses the first `JuliaTestItems.toml` it finds. That file applies
-whole; settings are **not** combined across several files.
+A file is searched only if each config file from the top of the tree down to its
+own folder admits it, each one's globs read relative to its own folder. A nested
+file can therefore narrow what an outer one selected, but it can never widen it.
 
 ```
 mypackage/
   JuliaTestItems.toml       exclude = ["**/scratch_*.jl"]
   src/
-    MyPackage.jl            ← governed by the root file
+    MyPackage.jl            ← searched: the root file admits it
   test/
     JuliaTestItems.toml     include = ["test_*.jl"]
-    test_core.jl            ← governed by test/JuliaTestItems.toml
-    scratch_notes.jl        ← governed by test/JuliaTestItems.toml
+    test_core.jl            ← searched: both files admit it
+    scratch_notes.jl        ← not searched: the root file excludes it
 ```
 
-Here `test/scratch_notes.jl` **is** excluded — but by `test/JuliaTestItems.toml`,
-whose `include = ["test_*.jl"]` does not match it, not by the root file's
-`exclude`, which no longer applies inside `test/`.
+`test/scratch_notes.jl` would stay excluded even if `test/JuliaTestItems.toml`
+said `include = ["**"]`. That is the point of the rule: it is how you seal off a
+subtree you do not own — write the exclusion in the config file at the root of the
+project that vendors it, and nothing inside can take it back.
 
-If that seems strict, it buys you something worth having: to know how a folder is
-configured, you read exactly one file. A single `JuliaTestItems.toml` at the root
-should be your default — when part of the tree needs different settings, use an
-`[[override]]` block in that one file rather than a second file. A nested file is
-a last resort, for a subtree that is genuinely independent of the project, such
-as a vendored repository.
-
-Since a nested file replacing its parent would otherwise be invisible, the inner
-file is flagged with an informational diagnostic naming the one it takes over from. That is
-normally what you want — a stray config usually arrives with a vendored
-repository or a copied example, where the shadowing is accidental. If the subtree
-is meant to be independent, silence it in that subtree's `JuliaLint.toml`:
-
-```toml
-[rules]
-shadowed_config = "off"
-```
+A single `JuliaTestItems.toml` at the root should still be your default. When part
+of the tree needs different settings, reach for an `[[override]]` block in that one
+file before adding a second file. A nested file is a last resort, for a subtree
+that is genuinely independent of the project, such as a vendored repository.
 
 ## Reporting problems in test items
 
