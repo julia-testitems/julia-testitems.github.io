@@ -20,6 +20,8 @@ The two approaches are not exclusive. The same `@testitem` blocks work under bot
    Pkg.add("TestItemRunner")
    ```
 
+   Note that this writes a `test/Manifest.toml` as well. That makes `test/` a project in the sense [environment discovery](./environments#step-2-which-project-supplies-the-manifest) uses, and since it does not `dev` the package it is then discarded — so test items under `test/` fall back to the package folder rather than to an enclosing project or your active environment. Delete it, or `dev` the package into it, if you were relying on those for your versions.
+
 2. Create or update `test/runtests.jl`:
    ```julia
    using TestItemRunner

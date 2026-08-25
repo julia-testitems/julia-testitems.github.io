@@ -14,7 +14,7 @@ The pool is keyed by the *environment* a test item needs — its package and pro
 
 Two things invalidate a pooled process rather than reusing it:
 
-- **The environment changed.** If the content of the [chosen project's](./environments#step-2-which-project-supplies-the-manifest) `Project.toml` or `Manifest.toml` changed since the process was started, its loaded packages are stale in a way no amount of reloading can fix, and it is restarted.
+- **The environment changed.** If any file the environment was built from changed since the process was started — the [chosen project's](./environments#step-2-which-project-supplies-the-manifest) `Project.toml` and `Manifest.toml`, the package's own pair, or the package's `test/Project.toml` and `test/Manifest.toml` — its loaded packages are stale in a way no amount of reloading can fix, and it is restarted.
 - **You terminate it.** VS Code offers **Stop Test Process** in the Julia Workspace panel, DevREPL has [`test kill`](./repl#managing-test-processes). Both are the way out if a process gets into a state you do not trust.
 
 ### Revise-based hot reload

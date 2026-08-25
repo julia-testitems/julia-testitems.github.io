@@ -60,7 +60,7 @@ exit(ok ? 0 : 1)
 | `on_event` | `nothing` | Receives a `DiscoveryFinished` event and then every [run event](#events). |
 | `log_min_level` | `Logging.Warn` | Minimum level for log records emitted while the run is active (the controller logs its lifecycle at info level). `nothing` leaves the current logger in place. |
 | `store_path` | `nothing` | JuliaWorkspaces on-disk store. |
-| `active_project` | `nothing` | Project folder or file used as the fallback environment for files outside any project — see [Environments](../guide/environments). |
+| `active_project` | `nothing` | Project folder or file used as the fallback environment for files outside any project. As a test project it is used only if it has a manifest and that manifest `dev`s the package — see [Environments](../guide/environments). |
 
 Discovery honors [`JuliaTestItems.toml`](../guide/configuration) exactly like every other surface. Test processes never inherit `JULIA_LOAD_PATH`, `JULIA_PROJECT` or `JULIA_DEPOT_PATH` from the host, so a tool installed as a Pkg app can run tests for arbitrary packages.
 

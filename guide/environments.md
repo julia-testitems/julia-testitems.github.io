@@ -9,8 +9,9 @@ The one-sentence version: **a test item runs in the same kind of sandbox that `P
 | Where the test file lives | What the test item runs in |
 | --- | --- |
 | Inside a package that has a `test/Project.toml` | A sandbox built from `test/Project.toml`, with the package itself added; versions pinned by the package's `Manifest.toml` if there is one |
-| Inside a package that lists test dependencies in `[extras]` / `[targets]` | A sandbox generated from those sections, exactly as `Pkg.test` would; versions pinned by the package's `Manifest.toml` if there is one |
+| Inside a package that lists test dependencies in `[extras]` / `[targets]` | A sandbox generated from those sections *plus the package's own `[deps]`*, exactly as `Pkg.test` would; versions pinned by the package's `Manifest.toml` if there is one |
 | Inside a package that is `dev`ed by an enclosing project (or by the active environment) | The same sandbox, but versions come from *that project's* `Manifest.toml` instead of the package's own |
+| Inside a package, under a nested project that `dev`s it (`test/special/`, say) | The same sandbox again, with versions from *that* nested `Manifest.toml`. It pins versions; it does not add dependencies — see [below](#a-nested-project-pins-versions-it-does-not-add-dependencies) |
 | Outside any package | Nothing — there is no package to build a test environment for, and the test item cannot run. See [Troubleshooting](#troubleshooting). |
 
 The rest of this page explains how those rows are arrived at, and what happens in the corners.
@@ -32,7 +33,7 @@ Belonging to a package says *which* package to test. It does not by itself say w
 1. Take the **innermost enclosing project** of the test file (a folder with both a project file and a manifest). For an ordinary package with a checked-in `Manifest.toml`, that is the package folder itself.
 2. If there is no enclosing project, take the **active environment**, if the surface you are using has one and it is a real project — that is, it has a manifest. An active environment without a manifest is ignored. Which surfaces have an active environment, and where it comes from, is described in the [next section](#the-active-environment-as-fallback).
 3. Whatever project step 1 or 2 produced is kept only if it is **the package folder itself**, or a project whose manifest **`dev`s the package** (has it as a `path`-tracked dependency). A project that merely *contains* the package on disk, or that has the package as a regular registered dependency, does not count.
-4. If nothing survives, the test item runs with the package folder alone as its source. Since a package folder with its own manifest would already have been picked up in step 1, this means a package without a manifest, and its dependencies are resolved fresh (see [Step 3](#step-3-with-or-without-a-manifest)).
+4. If nothing survives, the test item runs with the package folder alone as its source — and the package folder's own manifest, if it has one, is used (see [Step 3](#step-3-with-or-without-a-manifest)). Note that step 1 searches the ancestors of the *file*, not of the package, so this is not only the manifest-less case: a `test/` folder that happens to hold both a `Project.toml` and a `Manifest.toml` is the innermost project for every file under it, is then discarded by rule 3 because it does not `dev` the package, and the package folder takes over.
 
 The point of rule 3 is that the manifest actually has to describe the code you are testing. If your workspace environment `dev`s `MyPackage` at `~/code/MyPackage`, its manifest is a faithful description of the dependency graph the package sees, and using it means your tests see the same versions your REPL does. If it does not `dev` the package, using its manifest would pin versions for a graph the package is not part of, so it is left out.
 
@@ -90,11 +91,27 @@ Two version notes for older Julia releases: on Julia < 1.11 there is no `[source
 With the mirror active, the runner does what `Pkg.test` does — through the same code, in fact: it uses a vendored copy of [TestEnv.jl](https://github.com/JuliaTesting/TestEnv.jl), which is `Pkg.test`'s sandbox logic extracted into a package. For the package that owns the file:
 
 - **If `test/Project.toml` exists**, that project is the test environment. The package itself is added to it, and versions of anything shared with the main environment are carried over from the manifest chosen in Step 3.
-- **Otherwise**, a test project is generated from the `[extras]` and `[targets]` sections of the package's own `Project.toml` (`test = ["Test", "..."]`), again with the package added and manifest versions carried over.
+- **Otherwise**, a test project is generated from the package's own `[deps]` plus the names its `[targets]` `test` list names (`test = ["Test", "..."]`), each resolved through `[extras]` or `[weakdeps]` — again with the package added and manifest versions carried over. Note that the package's own dependencies come along here, which is why they are importable in a test item without being repeated anywhere.
 
 Either way the result is written to a temporary directory, resolved, and precompiled. If the versions pinned by the manifest cannot all be kept together with the test dependencies, the environment is re-resolved with a warning — `Could not use exact versions of packages in manifest, re-resolving` — which is the same warning `Pkg.test` prints in that situation.
 
 `[extras]` and `[targets]` are always read from the *real* package `Project.toml`, so a package that keeps its test dependencies there does not need to do anything special.
+
+### A nested project pins versions, it does not add dependencies
+
+Steps 2 and 4 pull in opposite directions, and it is worth being explicit about where they meet. A `Project.toml` + `Manifest.toml` pair placed *inside* a package — `test/special/`, say — is chosen by Step 2 like any other enclosing project, provided its manifest `dev`s the package. What that changes is **Step 3**: test items under `test/special/` take their versions from that manifest, while test items elsewhere in the package take theirs from whatever Step 2 picks for them. Each group gets its own test process. That is a supported way to run different groups of test items against different pinned versions — a JET or GPU suite held at a specific version, for instance.
+
+What it does **not** change is Step 4. The test target is always read from the package, so a package listed only in `test/special/Project.toml` is not a dependency of the environment the test items run in, and `using` it fails:
+
+```
+ArgumentError: Package Aqua not found in current path.
+```
+
+A package has exactly one test target — the same one `Pkg.test` uses — and Julia has no notion of per-directory test dependencies. So the two halves are used together: declare the dependency once in the package's test target, and let the nested manifest decide which version of it that group of test items resolves to. A version pinned in the nested manifest only takes effect for packages the test target actually reaches; anything else in that manifest is pruned away with the rest of the dependency graph the tests do not use.
+
+::: tip
+This is the nested counterpart of the monorepo case above, and the rule is the same in both: a project supplies the manifest, the package supplies the test dependencies.
+:::
 
 ## What the test process sees
 
@@ -112,7 +129,7 @@ A few concrete facts, for when a test item asks questions about its own surround
 
 An environment is materialized once per test process, when the process starts. Test processes are pooled and reused across runs (see [Test Processes](./test-processes)), and the pool is keyed by everything above — package, project, Julia binary and flags, environment variables, coverage mode, bounds checking. A run that asks for the same combination reuses a process that already has the environment loaded, which is why the second run is fast.
 
-If the content of the chosen project's `Project.toml` or `Manifest.toml` changes between runs, the pooled process is not reused: its environment was resolved against the old content, and it is restarted rather than patched. Edits to your source code do not have that effect — those are picked up by Revise.
+If the content of any file the environment was built from changes between runs, the pooled process is not reused. That is the chosen project's `Project.toml` and `Manifest.toml`, the package's own `Project.toml` and manifest, and the package's `test/Project.toml` and `test/Manifest.toml` — so editing your test dependencies restarts the process, as it must: its environment was resolved against the old content, and it is restarted rather than patched. Edits to your source code do not have that effect — those are picked up by Revise.
 
 When several processes start into the same cold environment, one of them precompiles and the others wait for it, so a cold start costs one precompilation, not one per process.
 
@@ -132,6 +149,8 @@ If you use both — `juliati` day to day and `Pkg.test` for registries and downs
 **"Cannot activate an environment"** — the test file is not inside a package folder (a folder whose `Project.toml` has `name`, `uuid` and `version`). Test items are compiled and run against a package's test environment, so a `@testitem` in a loose script or in a folder with only a bare `Project.toml` has nothing to run in. Move the file into a package, or give the folder a proper package `Project.toml`.
 
 **Tests see different versions than my REPL** — your REPL's environment is not being used as the fallback project. Check that it has a `Manifest.toml`, that it `dev`s the package (not `add`s it), and that the surface you are on has an active environment at all — `juliati` never does. Alternatively check in a manifest in the package folder itself.
+
+**"Package X not found in current path"** — `X` is not in the package's test target. Test dependencies come from the package's `test/Project.toml`, or from its `[extras]`/`[targets]`; a `Project.toml` nested deeper in the tree supplies version pins only. See [Step 4](#step-4-the-test-target).
 
 **"Could not use exact versions of packages in manifest, re-resolving"** — the manifest and the test dependencies could not be satisfied together, so the test environment was resolved fresh. Usually a `[compat]` entry in `test/Project.toml` or `[extras]` conflicts with what the manifest pins.
 
