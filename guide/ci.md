@@ -107,18 +107,27 @@ A `.JuliaFormatter.toml` is **not** honored — configuration comes from `JuliaF
 | Option | Default | Description |
 |---|---|---|
 | `testitem-timeout` | *(none)* | Per-test-item timeout in seconds. Unset by default — see [Hang diagnostics](./test-processes#hang-diagnostics) |
+| `activation-timeout` | *(none)* | How long a test process may spend activating and precompiling its environment before its items are errored. Unset by default — a legitimate activation is a precompilation. |
+| `run-stall` | *(off)* | Opt-in: error the run's remaining items after this many seconds with no test process busy and no message about it. Unset never fails an idle run — it is only warned about in the log. Time in which a worker is activating, revising or running an item never counts. |
 | `filter` | `""` | Julia expression to filter test items (can reference `name`, `tags`, `filename`, `package_name`) |
 | `env` | `""` | JSON string of environment variables, e.g. `'{"FOO": "BAR"}'` |
 | `github_job_prep_script` | | Path to a Julia script run once per worker before tests |
 | `allow-failure` | `"rc,beta,alpha,nightly"` | Which matrix legs may fail without failing the run — see [below](#legs-allowed-to-fail) |
+| `max-workers` | the `juliati` default | Maximum number of parallel test processes per leg. |
+| `threads` | Julia's own default | Value for the test processes' `--threads`, e.g. `4`, `auto`, `2,1`. |
+| `gc-between-testitems` | the `juliati` default | Run a full GC between test items: `true`, `false`, or unset for the default (on when more than one test process is used). See [Test Processes](./test-processes#gc-between-test-items). |
+| `memory-threshold` | off | Recycle a test process once system memory use exceeds this fraction (0–1). Experimental. See [Test Processes](./test-processes#memory-threshold-recycling). |
+| `schedule` | the `juliati` default | How test items are distributed over test processes: `duration` (the default) or `contiguous`. See [Test Processes](./test-processes#scheduling). |
+| `coverage` | `true` | Run the test processes in coverage mode and upload the merged result. |
+| `coverage-lcov-path` | — | Path to write the merged coverage of the run in LCOV format. |
+| `junit-path` | — | Path to write the test-run results as JUnit XML. |
+| `output-mode` | the action default (`issues`) | Which captured test item output to echo into the job log: `issues`, `all`, or `none`. |
+| `test-log-level` | `Info` | Minimum log level for the code under test: `Debug`, `Info`, `Warn` or `Error`. |
+| `check-bounds` | `auto` | `--check-bounds` mode for the test processes. `auto` respects `@inbounds` and reuses precompile caches; `yes` forces bounds checks everywhere, matching `Pkg.test`, at the cost of re-precompiling every leg. |
 
-The workflow deliberately exposes only the settings most packages need. The
-[`julia-run-testitems` action](./actions#julia-run-testitems) it calls has further
-inputs — `junit-path`, `coverage-lcov-path`, `output-mode`, `threads`,
-`gc-between-testitems`, `memory-threshold` and `schedule` — which are not forwarded
-through the workflow. If you need one of them, use the action directly in a pipeline of
-your own; the workflow's [job list](#jobs) is a working description of how the pieces fit
-together.
+These forward directly to the [`julia-run-testitems` action](./actions#julia-run-testitems)
+the workflow calls; its input table has the full descriptions. The workflow's
+[job list](#jobs) is a working description of how the pieces fit together.
 
 ### Legs Allowed to Fail
 
