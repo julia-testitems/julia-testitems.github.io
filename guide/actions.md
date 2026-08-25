@@ -42,6 +42,9 @@ It installs its own pinned Julia environment, so you do not need to install Test
 | `filter` | — | Julia expression over `name`, `tags`, `filename`, `package_name`; only items for which it is true are run, e.g. `':ci in tags'`. |
 | `profile-name` | `Default` | Profile name recorded in the results JSON. |
 | `testitem-timeout` | *(none)* | Per-test-item timeout in seconds. Unset by default — see [Hang diagnostics](./test-processes#hang-diagnostics) for when it is worth setting. |
+| `activation-timeout` | *(none)* | How long a test process may spend activating and precompiling its environment before its items are errored. Unset by default — a legitimate activation is a precompilation, and no one number fits every project. |
+| `run-stall` | *(off)* | Opt-in: error the run's remaining test items after this many seconds with no test process busy and no message about it. Unset never fails an idle run — it is only warned about in the log. Time in which a worker is activating, revising or running an item never counts, so this bounds a run whose workers died without reporting it, not a slow one. |
+| `test-log-level` | `Info` | Minimum log level for the code under test: `Debug`, `Info`, `Warn` or `Error`. GitHub's debug-logging checkbox raises the infrastructure's own logging instead. |
 | `coverage` | `false` | Run the test processes in coverage mode. |
 | `max-workers` | the `juliati` default | Maximum number of parallel test processes. |
 | `threads` | Julia's own default | Value for the test processes' `--threads`, e.g. `4`, `auto`, `2,1`. |
