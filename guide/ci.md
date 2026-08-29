@@ -17,7 +17,7 @@ Add the following file as `.github/workflows/juliaci.yml` to your package:
 name: Julia CI
 
 on:
-  push: {branches: [main, master]}
+  push: {branches: [main, master], tags: ['**']}
   pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]}
   issue_comment: {types: [created]}
   workflow_dispatch:
@@ -43,7 +43,7 @@ This gives you:
 - Tests on all supported platforms (Linux, macOS, Windows; x64 and x86/aarch64)
 - Coverage upload to Codecov
 - A single job summary aggregating test and lint results across the whole matrix
-- Documentation deployment
+- Documentation deployment, including [versioned docs for every release tag](#versioned-documentation) — no `DOCUMENTER_KEY` needed
 - TagBot automation
 
 For dependency updates, see [Dependabot's Julia support](https://docs.github.com/en/code-security/dependabot).
@@ -67,10 +67,20 @@ The `workflow_dispatch` block in the quick start above lets you trigger parts of
 | `compute-test-matrix` | Derives the version/platform matrix from your `[compat]` bound via [`julia-compute-test-matrix`](./actions#julia-compute-test-matrix). |
 | `run-tests` | One leg per matrix entry: installs Julia, builds the package, runs test items with [`julia-run-testitems`](./actions#julia-run-testitems), processes coverage, and uploads to Codecov. Legs [allowed to fail](#legs-allowed-to-fail) run with `continue-on-error`. |
 | `report-results` | Merges every leg's results plus the lint SARIF into one job summary via [`julia-report-ci-results`](./actions#julia-report-ci-results). Blocking and allowed-to-fail legs upload separate artifacts, and the report keeps them apart. |
-| `deploy-docs` | Runs `julia-docdeploy` if the repository has a docs build. |
+| `deploy-docs` | Runs `julia-docdeploy` if the repository has a docs build. Runs for branch pushes, pull requests, and `v*` tag pushes. |
 | `tagbot` | Runs TagBot on the release comment, or on a manual trigger. |
+| `deploy-tagged-docs` | Deploys the versioned docs for the tags TagBot just created, in the same run — see [Versioned Documentation](#versioned-documentation). |
 
 Because the report job aggregates across the matrix, a test that fails on one platform only is reported once, with the platforms it failed on — you do not have to open 69 job logs to find it. Failures confined to a leg that is allowed to fail are listed under an *(allowed to fail)* heading and marked with a warning rather than an error.
+
+### Versioned Documentation
+
+Documenter deploys the docs for a release from a build of its `v*` tag, and the workflow covers both ways such a tag comes into being — without a `DOCUMENTER_KEY` deploy key:
+
+- **Tags created by TagBot** (the normal registry release flow): tags pushed with the workflow's `GITHUB_TOKEN` never trigger another workflow run, so a `tags:` trigger cannot fire for them. Instead, the run that executes TagBot detects the tags it created and deploys their docs directly, in the same run.
+- **Tags pushed by hand**: the `tags: ['**']` trigger in the quick start fires, and the docs for the tag are deployed. A tag push runs *only* docs deployment — the tagged commit already went through lint and tests on its branch, so the test matrix is not repeated.
+
+The trigger is deliberately every tag (`'**'`) while the workflow only acts on tags starting with `v`: future tag-driven features can be added to the reusable workflow without you having to touch your workflow file again. To redeploy a version's docs by hand, run the `DocDeploy` [manual trigger](#manual-runs) with the tag selected as the ref.
 
 ### Formatting
 

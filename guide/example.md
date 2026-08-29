@@ -184,7 +184,7 @@ A single workflow file, `.github/workflows/juliaci.yml`, brings in the [reusable
 name: Julia CI
 
 on:
-  push: {branches: [main, master]}
+  push: {branches: [main, master], tags: ['**']}
   pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]}
   issue_comment: {types: [created]}
   workflow_dispatch:
