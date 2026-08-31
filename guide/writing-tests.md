@@ -198,3 +198,29 @@ Note the key differences from snippets:
 | **Use for** | Lightweight setup, test fixtures | Expensive setup, shared resources |
 
 Both `@testsnippet` and `@testmodule` can appear in any `.jl` file in your package, just like `@testitem`.
+
+## Large Data and `const`
+
+Every test item runs in a module of its own, and Julia cannot unload a module. Once a test item has finished its globals are set to `nothing`, so that whatever they pointed at can be collected — otherwise a run would hold on to every array every test item ever created.
+
+A `const` cannot be released that way. On Julia 1.12 and later a constant's binding keeps its old value alive for the rest of the process, so the test item below costs 800 MB for the whole run rather than just for its own duration:
+
+```julia
+@testitem "expensive" begin
+    const data = rand(100_000_000)   # stays in memory until the process exits
+
+    @test size(data) == (100_000_000,)
+end
+```
+
+Binding the same array to a plain global instead lets it be collected as soon as the test item finishes:
+
+```julia
+@testitem "expensive" begin
+    data = rand(100_000_000)         # released when the test item finishes
+
+    @test size(data) == (100_000_000,)
+end
+```
+
+This only matters for large objects. A `const` holding a number, a symbol or a small configuration object is not worth thinking about.
