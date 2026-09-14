@@ -185,7 +185,7 @@ name: Julia CI
 
 on:
   push: {branches: [main, master], tags: ['**']}
-  pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]}
+  pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, closed]}
   issue_comment: {types: [created]}
   workflow_dispatch:
     inputs:
