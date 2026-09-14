@@ -18,7 +18,7 @@ name: Julia CI
 
 on:
   push: {branches: [main, master], tags: ['**']}
-  pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]}
+  pull_request: {types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, closed]}
   issue_comment: {types: [created]}
   workflow_dispatch:
     inputs:
@@ -43,6 +43,7 @@ This gives you:
 - Tests on all supported platforms (Linux, macOS, Windows; x64 and x86/aarch64)
 - Coverage upload to Codecov
 - A single job summary aggregating test and lint results across the whole matrix
+- A pull request’s queued and in-progress CI is cancelled the moment the PR is closed or merged (that is what the `closed` trigger type is for), so stale runs do not keep occupying runners
 - Documentation deployment, including [versioned docs for every release tag](#versioned-documentation) — no `DOCUMENTER_KEY` needed
 - TagBot automation
 
